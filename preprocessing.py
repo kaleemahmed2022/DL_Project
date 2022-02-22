@@ -121,5 +121,5 @@ def main():
 
 
 if __name__ == '__main__':
-    #main()
+    main()
     gen_phases('./dataset/processed/', train_split=0.7, valid_split=0.15, test_split=0.15)
