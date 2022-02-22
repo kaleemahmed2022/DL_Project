@@ -3,18 +3,16 @@ import torch
 import numpy as np
 import tensorboardX
 from tqdm import tqdm
-
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset
-
 from network import VggVox
 from dataloader import VoxLoader
 from utils import Normalize, ToTensor
 from torchvision.transforms import Compose
 
-DATASET_PATH = '/home/saswat/datasets/wav/'
-LOG_DIR = '/home/saswat/datasets/logs'
+DATASET_PATH = './dataset/'
+LOG_DIR = './logs/'
 total_epochs = 30
 
 torch.backends.cudnn.deterministic = True
@@ -25,7 +23,7 @@ initial_lr = 1e-2
 final_lr = 1e-4
 
 gamma = 10 ** (np.log10(final_lr / initial_lr) / (total_epochs - 1))
-device = 'cuda:0'
+device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 TBoard = tensorboardX.SummaryWriter(log_dir=LOG_DIR)
 
@@ -97,4 +95,3 @@ torch.save(model.state_dict(), os.path.join(LOG_DIR, 'checkpoint.txt'))
 TBoard.close()
 print('Top 1 accuracy: {}'.format(round(top1_accuracy, 3)))
 print('Top 5 accuracy: {}'.format(round(top5_accuracy, 3)))
-

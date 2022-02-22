@@ -1,5 +1,4 @@
 import os
-
 import numpy as np
 import pandas as pd
 from scipy.io import wavfile
@@ -91,7 +90,7 @@ class VoxLoader(Dataset):
         label = int(track_path.split('/')[0].replace('id1', '')) - 1
 
         window = 'hamming'
-        Tw = 25;
+        Tw = 25
         Ts = 10
 
         Nw = int(rate * Tw * 1e-3)
