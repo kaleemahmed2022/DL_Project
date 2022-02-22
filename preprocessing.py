@@ -6,7 +6,10 @@ format. Can also include further preproessing steps here if necessary.
 from pydub import AudioSegment
 import os
 from tqdm import tqdm
-os.system('conda install -c main ffmpeg') # need this for pydub to function
+import pandas as pd
+import numpy as np
+
+os.system('conda install -c main ffmpeg')  # need this for pydub to function
 
 
 def mkdir_if_not_exists(path):
@@ -20,10 +23,11 @@ def mkdir_if_not_exists(path):
     '''
     path_splits = path.split('/')
     path_splits.remove('.')
-    incremental_path = '.' # we need to iterate through all the subdirectories in 'path' to incrememtally create them
+    incremental_path = '.'  # we need to iterate through all the subdirectories in 'path' to incrememtally create them
     for subpath in path_splits:
 
-        incremental_path = os.path.join(incremental_path, subpath) # build the incrememtal path, check if it exists and build
+        incremental_path = os.path.join(incremental_path,
+                                        subpath)  # build the incrememtal path, check if it exists and build
         if not os.path.exists(incremental_path):
             os.mkdir(incremental_path)
         else:
@@ -43,8 +47,47 @@ def m4a_to_wav(input_path, output_path):
 
     '''
 
-    track = AudioSegment.from_file(input_path, format='m4a') # read the m4a file
-    file_handle = track.export(output_path, format='wav') # export the wav
+    track = AudioSegment.from_file(input_path, format='m4a')  # read the m4a file
+    file_handle = track.export(output_path, format='wav')  # export the wav
+    return
+
+
+def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
+    '''
+
+    generates iden_split.txt at DATAPATH/iden_split.txt.
+
+    calculates phases based on provided splits using a random generator.
+    A single id and context directory will always be in the same phase!!!! (prevents dataleakage)
+    Every id will have a combination of all 3 phases
+    '''
+
+    # normalise splits
+    splits = [train_split, valid_split, test_split]
+    train_split, valid_split, test_split = [float(n) / sum(splits) for n in splits]
+
+    iden_split = pd.DataFrame(columns=['phase', 'path'])
+    ids = os.listdir(DATAPATH)
+    if '.DS_Store' in ids: ids.remove('.DS_Store')
+    for id in tqdm(ids):  # run a proc bar just to keep track
+
+        contexts = os.listdir(os.path.join(DATAPATH, id))
+        phases = list(np.random.choice([1, 2, 3], p=splits, size=len(contexts)))
+
+        if '.DS_Store' in contexts: contexts.remove('.DS_Store')
+        for ctx in contexts:
+
+            rawpath = os.path.join(DATAPATH, id, ctx)
+            procpath = os.path.join(DATAPATH, id, ctx)
+
+            phase = phases.pop(0)
+
+            files = os.listdir(rawpath)
+            if '.DS_Store' in files: files.remove('.DS_Store')
+            for f in files:
+                filepath = os.path.join(id, ctx, f)
+                iden_split.loc[len(iden_split)] = [phase, filepath]
+    iden_split.to_csv(os.path.join(DATAPATH, 'iden_split.csv'))
     return
 
 
@@ -59,7 +102,7 @@ def main():
     outdir = './dataset/processed/'
     ids = os.listdir(rootdir)
     if '.DS_Store' in ids: ids.remove('.DS_Store')
-    for id in tqdm(ids): # run a proc bar just to keep track
+    for id in tqdm(ids):  # run a proc bar just to keep track
 
         contexts = os.listdir(os.path.join(rootdir, id))
         if '.DS_Store' in contexts: contexts.remove('.DS_Store')
@@ -72,10 +115,11 @@ def main():
             files = os.listdir(rawpath)
             if '.DS_Store' in files: files.remove('.DS_Store')
             for f in files:
-                    m4a_to_wav(os.path.join(rawpath, f),
-                               os.path.join(procpath, f[:-3] + 'wav'))
+                m4a_to_wav(os.path.join(rawpath, f),
+                           os.path.join(procpath, f[:-3] + 'wav'))
     return
 
 
 if __name__ == '__main__':
-    main()
+    #main()
+    gen_phases('./dataset/processed/', train_split=0.7, valid_split=0.15, test_split=0.15)

@@ -64,8 +64,9 @@ def cmvnw(vec, win_size=301, variance_normalization=False):
 class VoxLoader(Dataset):
 
     def __init__(self, path, train, transform=None):
-        iden_split_path = os.path.join(path, 'iden_split.txt')
-        split = pd.read_table(iden_split_path, sep=' ', header=None, names=['phase', 'path'])
+        iden_split_path = os.path.join(path, 'iden_split.csv')
+        #split = pd.read_table(iden_split_path, sep=' ', header=None, names=['phase', 'path'])
+        split = pd.read_csv(iden_split_path)[['phase', 'path']]
 
         if train:
             phases = [1, 2]
@@ -84,7 +85,8 @@ class VoxLoader(Dataset):
 
     def __getitem__(self, idx):
         track_path = self.dataset[idx]
-        audio_path = os.path.join(self.path, 'audio', track_path)
+        #audio_path = os.path.join(self.path, 'audio', track_path)
+        audio_path = os.path.join(self.path, track_path)
 
         rate, samples = wavfile.read(audio_path)
         label = int(track_path.split('/')[0].replace('id1', '')) - 1
