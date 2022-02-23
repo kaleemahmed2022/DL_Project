@@ -8,6 +8,9 @@ import os
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
+import librosa
+import librosa.display
+import matplotlib.pyplot as plt
 
 os.system('conda install -c main ffmpeg')  # need this for pydub to function
 
@@ -51,6 +54,29 @@ def m4a_to_wav(input_path, output_path):
     file_handle = track.export(output_path, format='wav')  # export the wav
     return
 
+def wav_to_spectrogram(input_path):
+    '''
+
+    Args:
+        input_path: path to the wav file
+        output_graph: mel spectrogram and mfcc output
+
+    Returns: None
+
+    '''
+    x, sr = librosa.load(input_path, sr=44100)
+    mfccs = librosa.feature.mfcc(x, sr=sr, n_mfcc=40)
+    fig, ax = plt.subplots(nrows=2, sharex=True)
+    img = librosa.display.specshow(librosa.power_to_db(S, ref=np.max),
+                                   x_axis='time', y_axis='mel', fmax=8000,
+                                   ax=ax[0])
+    fig.colorbar(img, ax=[ax[0]])
+    ax[0].set(title='Mel spectrogram')
+    ax[0].label_outer()
+    img = librosa.display.specshow(mfccs, x_axis='time', ax=ax[1])
+    fig.colorbar(img, ax=[ax[1]])
+    ax[1].set(title='MFCC')
+    return
 
 def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
     '''
