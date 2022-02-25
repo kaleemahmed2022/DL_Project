@@ -65,6 +65,8 @@ def wav_to_spectrogram(input_path):
 
     '''
     x, sr = librosa.load(input_path, sr=44100)
+    S = librosa.feature.melspectrogram(x, sr=sr, n_mels=128,
+                                       fmax=8000)
     mfccs = librosa.feature.mfcc(x, sr=sr, n_mfcc=40)
     fig, ax = plt.subplots(nrows=2, sharex=True)
     img = librosa.display.specshow(librosa.power_to_db(S, ref=np.max),
