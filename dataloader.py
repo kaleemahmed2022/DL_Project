@@ -22,6 +22,7 @@ def cmvnw(vec, win_size=301, variance_normalization=False):
     Return:
           array: The mean(or mean+variance) normalized feature vector.
     """
+
     # Get the shapes
     eps = 2 ** -30
     rows, cols = vec.shape
@@ -65,12 +66,10 @@ class VoxLoader(Dataset):
 
     def __init__(self, path, train, transform=None):
         iden_split_path = os.path.join(path, 'iden_split.csv')
-        #split = pd.read_table(iden_split_path, sep=' ', header=None, names=['phase', 'path'])
         split = pd.read_csv(iden_split_path)[['phase', 'path']]
 
         if train:
             phases = [1, 2]
-
         else:
             phases = [3]
 
