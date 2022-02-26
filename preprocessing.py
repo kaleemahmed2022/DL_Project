@@ -11,6 +11,7 @@ import numpy as np
 import librosa
 import librosa.display
 import matplotlib.pyplot as plt
+import wave
 
 os.system('conda install -c main ffmpeg')  # need this for pydub to function
 
@@ -118,8 +119,52 @@ def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
     iden_split.to_csv(os.path.join(DATAPATH, 'iden_split.csv'))
     return
 
+#def convert_sample_rate(filename):
+#    '''
+#    NOT NEEDED??
+#    converts and overwrites a .wav file at ./filename to 16kHz
+#    Args:
+#        filename: path + name (ending in .wav) of file to be converted
+#    Returns:
+#    '''
+#    rootdir = './dataset/processed/'
+#    ids = os.listdir(rootdir)
+#    for id in tqdm(ids):
+#
+#        contexts = os.listdir(os.path.join(rootdir, id))
+#        if '.DS_Store' in contexts: contexts.remove('.DS_Store')
+#        for ctx in contexts:
+#            path = os.path.join(rootdir, id, ctx)
+#            files = os.listdir(path)
+#            for f in files:
+#                librosa.load(os.path.join(path, f), sr=16000)
 
-def main():
+
+def check_sample_rates():
+    '''
+
+    checks the sample rate of all .wav files inside rootdir
+    '''
+
+    sample_rates = pd.DataFrame(index=None, columns = ['id','context','file','sample rate'])
+    rootdir = './dataset/processed/'
+    ids = os.listdir(rootdir)
+    if 'iden_split.csv' in ids: ids.remove('iden_split.csv')
+    for id in tqdm(ids):
+        contexts = os.listdir(os.path.join(rootdir, id))
+        if '.DS_Store' in contexts: contexts.remove('.DS_Store')
+        for ctx in contexts:
+            path = os.path.join(rootdir, id, ctx)
+            files = os.listdir(path)
+            for f in files:
+                with wave.open(os.path.join(path, f), "rb") as wave_file:
+                    sr = wave_file.getframerate()
+                    sample_rates.loc[len(sample_rates)] = [id, ctx, f, sr]
+    sample_rates.hist(column='sample rate')
+    return
+
+
+def dataset_to_wav():
     '''
 
     Scans through all subdirectories of ./dataset/raw/, and recreates them in ./dataset/processed/ (writing new
@@ -149,5 +194,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    gen_phases('./dataset/processed/', train_split=0.7, valid_split=0.15, test_split=0.15)
+    #dataset_to_wav()
+    #gen_phases('./dataset/processed/', train_split=0.7, valid_split=0.15, test_split=0.15)
+    check_sample_rates()
