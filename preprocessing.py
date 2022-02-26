@@ -12,6 +12,7 @@ import librosa
 import librosa.display
 import matplotlib.pyplot as plt
 import wave
+import torch
 
 os.system('conda install -c main ffmpeg')  # need this for pydub to function
 
@@ -93,21 +94,21 @@ def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
 
     # normalise splits
     splits = [train_split, valid_split, test_split]
-    train_split, valid_split, test_split = [float(n) / sum(splits) for n in splits]
+    assert sum(splits) == 1.
 
-    iden_split = pd.DataFrame(columns=['phase', 'path'])
+    iden_split = pd.DataFrame(columns=['phase', 'path', 'id', 'context'])
     ids = os.listdir(DATAPATH)
     if '.DS_Store' in ids: ids.remove('.DS_Store')
     for id in tqdm(ids):  # run a proc bar just to keep track
 
         contexts = os.listdir(os.path.join(DATAPATH, id))
         phases = list(np.random.choice([1, 2, 3], p=splits, size=len(contexts)))
+        id_int = int(id.replace('id', '')) - 1
 
         if '.DS_Store' in contexts: contexts.remove('.DS_Store')
         for ctx in contexts:
 
             rawpath = os.path.join(DATAPATH, id, ctx)
-            procpath = os.path.join(DATAPATH, id, ctx)
 
             phase = phases.pop(0)
 
@@ -115,8 +116,8 @@ def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
             if '.DS_Store' in files: files.remove('.DS_Store')
             for f in files:
                 filepath = os.path.join(id, ctx, f)
-                iden_split.loc[len(iden_split)] = [phase, filepath]
-    iden_split.to_csv(os.path.join(DATAPATH, 'iden_split.csv'))
+                iden_split.loc[len(iden_split)] = [phase, filepath, id_int, ctx]
+    iden_split.to_csv(os.path.join(DATAPATH, 'phase_map.csv'))
     return
 
 #def convert_sample_rate(filename):
@@ -193,7 +194,36 @@ def dataset_to_wav():
     return
 
 
+def normalise_spectograms(spect, rootdir='./dataset/processed/'):
+    '''
+
+    Normalises the amplitudes in a spectogram by (val-mean)/stdev
+
+    Args:
+        spect (str): path to spectogram file in binary torch format (.pt)
+        rootdir (str): string to the root of the data directory
+
+    Rewrites after normalising the spectogram. Same place it was read from
+
+    '''
+
+    ids = os.listdir(rootdir)
+    if 'iden_split.csv' in ids: ids.remove('iden_split.csv')
+    for id in tqdm(ids):
+        contexts = os.listdir(os.path.join(rootdir, id))
+        if '.DS_Store' in contexts: contexts.remove('.DS_Store')
+        for ctx in contexts:
+            path = os.path.join(rootdir, id, ctx)
+            files = os.listdir(path)
+            for f in files:
+                filepath = os.path.join(rootdir, id, ctx, f)
+                data = torch.load(filepath)
+                data = (data - data.mean())/data.std()
+                torch.save(data, filepath)
+    return
+
+
 if __name__ == '__main__':
-    #dataset_to_wav()
-    #gen_phases('./dataset/processed/', train_split=0.7, valid_split=0.15, test_split=0.15)
-    check_sample_rates()
+    dataset_to_wav()
+    gen_phases('./dataset/processed/', train_split=0.7, valid_split=0.15, test_split=0.15)
+    #check_sample_rates()
