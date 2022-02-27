@@ -211,21 +211,21 @@ class ResNet34(nn.Module):
         return {"loss": loss, "log": tensorboard_logs}
 
 
-class ResNet34_DateModule(pl.LightningDataModule):
-    def __init__(self, data_dir='./dataset/processed/'):
-        super().__init__()
-        self.data_dir = data_dir
-        self.transform = transforms.Compose([transforms.ToTensor()])
-
-    def setup(self, stage=None):
-        self.res_train = datasets.VoxDataset('./dataset/processed/', train=True)
-        self.res_test = datasets.VoxDataset('./dataset/processed/', train=False)
-
-    def train_dataloader(self):
-        return torch.utils.data.DataLoader(self.res_train, batch_size=32, shuffle=True)
-
-    def test_dataloader(self):
-        return torch.utils.data.DataLoader(self.res_test, batch_size=32, shuffle=False)
+# class ResNet34_DateModule(pl.LightningDataModule):
+#     def __init__(self, data_dir='./dataset/processed/'):
+#         super().__init__()
+#         self.data_dir = data_dir
+#         self.transform = transforms.Compose([transforms.ToTensor()])
+#
+#     def setup(self, stage=None):
+#         self.res_train = datasets.VoxDataset('./dataset/processed/', train=True)
+#         self.res_test = datasets.VoxDataset('./dataset/processed/', train=False)
+#
+#     def train_dataloader(self):
+#         return torch.utils.data.DataLoader(self.res_train, batch_size=32, shuffle=True)
+#
+#     def test_dataloader(self):
+#         return torch.utils.data.DataLoader(self.res_test, batch_size=32, shuffle=False)
 
 model = ResNet34()
 data_module = VoxDataloader(train, valid, test)
