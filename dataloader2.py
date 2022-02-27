@@ -31,8 +31,6 @@ class VoxDataset(Dataset):
         getitem written to specifically pull idx from disk into memory to avoid needing the full dataset
         stored in memory
 
-        todo: ensure spectograms are kept in ./dataset/processed/ as .pt files (torch binary files)
-
         Args:
             idx: integer
 
@@ -47,3 +45,4 @@ class VoxDataset(Dataset):
         spec = torch.load(full_path)
         return label, spec
 
+x = VoxDataset('./dataset/spectrograms/', True)
