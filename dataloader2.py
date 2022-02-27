@@ -6,20 +6,21 @@ from torch.utils.data import Dataset
 
 class VoxDataset(Dataset):
 
-    def __init__(self, rootpath, train):
+    def __init__(self, rootpath, phase='train'):
         '''
 
         Args: rootpath: path to the parent folder of data. typically ./dataset/processed/
-            train: bool. True if we're training
+            train: (str): either 'train', 'validation', 'test'
+
         '''
         self.rootpath = rootpath
-        self.train = train
+        self.phase = phase
 
         map_data = pd.read_csv(os.path.join(rootpath, 'phase_map.csv'))[['phase', 'path', 'id', 'context']]
 
-        phases = [1, 2] if train else [3]
+        phase_int = {'train':1, 'validation':2, 'test':3}[phase] # map phase onto the representative int
 
-        mask = map_data['phase'].isin(phases)
+        mask = (map_data['phase'] == phase_int)
         self.dataset = map_data[['path', 'id', 'context']][mask].reset_index(drop=True)
 
     def __len__(self):
@@ -44,5 +45,3 @@ class VoxDataset(Dataset):
         full_path = os.path.join(self.rootpath, sample_path)
         spec = torch.load(full_path)
         return label, spec
-
-x = VoxDataset('./dataset/spectrograms/', True)
