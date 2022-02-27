@@ -3,30 +3,33 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import Dataset
-# from torchvision.transforms import Compose
+from torchvision.transforms import Compose
+import pytorch_lightning as pl
+import torchmetrics
+import torch
+from torch.utils.data import random_split
+from torchvision import transforms
+import torchvision.datasets as datasets
+import pytorch_lightning.loggers as pl_loggers
+from dataloader2 import VoxDataset
 
 
-# 3x3 convolution
-def conv3x3(in_channels, out_channels, stride=1):
-    return nn.Conv2d(in_channels, out_channels, kernel_size=3,
-                     stride=stride, padding=1, bias=False)
+# # 3x3 convolution
+# def conv3x3(in_channels, out_channels, stride=1):
+#     return nn.Conv2d(in_channels, out_channels, kernel_size=3,
+#                      stride=stride, padding=1, bias=False)
 
 
 # Residual block
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1, downsample=None):
         super(ResidualBlock, self).__init__()
-        self.conv1 = conv3x3(in_channels, out_channels, stride)
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(out_channels, out_channels)
+        self.conv2 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_channels)
         self.downsample = downsample
-
-    # 3x3 convolution
-    def conv3x3(in_channels, out_channels, stride=1):
-        return nn.Conv2d(in_channels, out_channels, kernel_size=3,
-                         stride=stride, padding=1, bias=False)
 
     def forward(self, x):
         residual = x
@@ -47,7 +50,7 @@ class ResNet(nn.Module):
     def __init__(self, block, layers, num_classes=10):
         super(ResNet, self).__init__()
         self.in_channels = 16
-        self.conv = conv3x3(3, 16)
+        self.conv = nn.Conv2d(3, 16, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn = nn.BatchNorm2d(16)
         self.relu = nn.ReLU(inplace=True)
         self.layer1 = self.make_layer(block, 16, layers[0])
@@ -60,7 +63,7 @@ class ResNet(nn.Module):
         downsample = None
         if (stride != 1) or (self.in_channels != out_channels):
             downsample = nn.Sequential(
-                conv3x3(self.in_channels, out_channels, stride=stride),
+                nn.Conv2d(self.in_channels, out_channels, stride=stride),
                 nn.BatchNorm2d(out_channels))
         layers = []
         layers.append(block(self.in_channels, out_channels, stride, downsample))
@@ -80,6 +83,43 @@ class ResNet(nn.Module):
         out = out.view(out.size(0), -1)
         out = self.fc(out)
         return out
+
+    def configure_optimizers(self):
+        return optim.SGD(self.parameters(), lr=1e-2)
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self.forward(x)
+        loss = self.loss(logits, y)
+        accuracy = torchmetrics.functional.accuracy(logits, y)
+        tensorboard_logs = {'acc': {'train': accuracy.detach()}, 'loss': {'train': loss.detach()}}
+        self.log("loss/train", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log("accuracy/train", accuracy, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        return {"loss": loss, "log": tensorboard_logs}
+
+    # def training_epoch_end(self, outputs):
+    #     sampleImg=torch.rand((1,1,28,28))
+    #     self.logger.experiment.add_graph(MNISTLightningModule(), sampleImg)
+
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self.forward(x)
+        loss = self.loss(logits, y)
+        accuracy = torchmetrics.functional.accuracy(logits, y)
+        tensorboard_logs = {'acc': {'val': accuracy.detach()}, 'loss': {'val': loss.detach()}}
+        self.log("loss/val", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log("accuracy/val", accuracy, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        return {"loss": loss, "log": tensorboard_logs}
+
+    def test_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self.forward(x)
+        loss = self.loss(logits, y)
+        accuracy = torchmetrics.functional.accuracy(logits, y)
+        tensorboard_logs = {'acc': {'test': accuracy.detach()}, 'loss': {'test': loss.detach()}}
+        self.log("loss/test", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log("accuracy/test", accuracy, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        return {"loss": loss, "log": tensorboard_logs}
 
 # ResNet 34 example attempt
 class ResNet34(nn.Module):
@@ -133,5 +173,71 @@ class ResNet34(nn.Module):
         x3 = self.fc3(x)
         return x1,x2,x3
 
+    def configure_optimizers(self):
+        return optim.SGD(self.parameters(), lr=1e-2)
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self.forward(x)
+        loss = self.loss(logits, y)
+        accuracy = torchmetrics.functional.accuracy(logits, y)
+        tensorboard_logs = {'acc': {'train': accuracy.detach()}, 'loss': {'train': loss.detach()}}
+        self.log("loss/train", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log("accuracy/train", accuracy, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        return {"loss": loss, "log": tensorboard_logs}
+
+    # def training_epoch_end(self, outputs):
+    #     sampleImg=torch.rand((1,1,28,28))
+    #     self.logger.experiment.add_graph(MNISTLightningModule(), sampleImg)
+
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self.forward(x)
+        loss = self.loss(logits, y)
+        accuracy = torchmetrics.functional.accuracy(logits, y)
+        tensorboard_logs = {'acc': {'val': accuracy.detach()}, 'loss': {'val': loss.detach()}}
+        self.log("loss/val", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log("accuracy/val", accuracy, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        return {"loss": loss, "log": tensorboard_logs}
+
+    def test_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self.forward(x)
+        loss = self.loss(logits, y)
+        accuracy = torchmetrics.functional.accuracy(logits, y)
+        tensorboard_logs = {'acc': {'test': accuracy.detach()}, 'loss': {'test': loss.detach()}}
+        self.log("loss/test", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log("accuracy/test", accuracy, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        return {"loss": loss, "log": tensorboard_logs}
 
 
+class ResNet34_DateModule(pl.LightningDataModule):
+    def __init__(self, data_dir='./dataset/processed/'):
+        super().__init__()
+        self.data_dir = data_dir
+        self.transform = transforms.Compose([transforms.ToTensor()])
+
+    def setup(self, stage=None):
+        self.res_train = datasets.VoxDataset('./dataset/processed/', train=True)
+        self.res_test = datasets.VoxDataset('./dataset/processed/', train=False)
+
+    def train_dataloader(self):
+        return torch.utils.data.DataLoader(self.res_train, batch_size=32, shuffle=True)
+
+    def test_dataloader(self):
+        return torch.utils.data.DataLoader(self.res_test, batch_size=32, shuffle=False)
+
+model = ResNet34()
+data_module = ResNet34_DateModule()
+
+# https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.loggers.tensorboard.html#tensorboard-logger
+
+# You can change the name attribute to your question number.
+# This will update in your graph legends and will make reading your graphs easier.
+tb_logger = pl_loggers.TensorBoardLogger("./lightning_logs/", name="ResNet34")
+
+trainer = pl.Trainer(logger=tb_logger, max_epochs=10)
+trainer.fit(model, data_module)
+
+result = trainer.test(model, data_module)
+print(result)
