@@ -228,8 +228,8 @@ class ResNet34_DateModule(pl.LightningDataModule):
         return torch.utils.data.DataLoader(self.res_test, batch_size=32, shuffle=False)
 
 model = ResNet34()
-data_module = ResNet34_DateModule()
-
+data_module = VoxDataloader(train, valid, test)
+#  dataloader = VoxDataloader(train, valid, test)
 # https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.loggers.tensorboard.html#tensorboard-logger
 
 # You can change the name attribute to your question number.
