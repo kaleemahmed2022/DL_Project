@@ -3,6 +3,7 @@ quick script to take .m4a data directly from the vox dataset (in ./dataset/raw/)
 format. Can also include further preproessing steps here if necessary.
 '''
 import os
+
 os.system('conda install -c main ffmpeg')  # need this for pydub to function
 from pydub import AudioSegment
 from tqdm import tqdm
@@ -56,24 +57,34 @@ def m4a_to_wav(input_path, output_path):
     file_handle = track.export(output_path, format='wav')  # export the wav
     return
 
-def wav_to_spectrogram(input_path, output_path):
+
+def wav_to_spectrogram(input_path, output_path,
+                       sr = 16e3,
+                       Ts = 10,
+                       Tw = 25):
     '''
 
     Args:
         input_path: path to the wav file
         output_path: normalized spectrogram as a tensor
+        sr = sample rate of wav requiried
+        Ts = time step (ms) of sliding fft window
+        Tw = window size of fft window (ms)
 
     Returns: None
 
     '''
-    x, sr = librosa.load(input_path, sr=16000, mono=True, duration=3)
-    X = librosa.stft(x)
-    Xdb = librosa.amplitude_to_db(np.abs(X))
+
+    Ns = int(float(Ts)/1000 * sr) # need to specify the size of the fft windows
+    Nw = int(float(Tw)/1000 * sr)
+
+    x, sr = librosa.load(input_path, sr=sr, mono=True, duration=3)
+    X = librosa.stft(x, hop_length=Ns, win_length=Nw) # FFT in complex numbers
+    Xdb = np.abs(X) # abs value to take amplitude data of complex matrix
     data = (Xdb - Xdb.mean()) / X.std()
-    totensor = transforms.ToTensor()
-    tensor = totensor(data)
-    torch.save(tensor, output_path)
+    torch.save(torch.tensor(data), output_path) # the prior transform was messing with the datashape
     return
+
 
 def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
     '''
@@ -113,7 +124,8 @@ def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
     iden_split.to_csv(os.path.join(DATAPATH, 'phase_map.csv'))
     return
 
-#def convert_sample_rate(filename):
+
+# def convert_sample_rate(filename):
 #    '''
 #    NOT NEEDED??
 #    converts and overwrites a .wav file at ./filename to 16kHz
@@ -140,7 +152,7 @@ def check_sample_rates():
     checks the sample rate of all .wav files inside rootdir
     '''
 
-    sample_rates = pd.DataFrame(index=None, columns = ['id','context','file','sample rate'])
+    sample_rates = pd.DataFrame(index=None, columns=['id', 'context', 'file', 'sample rate'])
     rootdir = './dataset/processed/'
     ids = os.listdir(rootdir)
     if 'iden_split.csv' in ids: ids.remove('iden_split.csv')
@@ -217,7 +229,6 @@ def dataset_to_pt():
     return
 
 
-
 def normalise_spectograms(spect, rootdir='./dataset/processed/'):
     '''
 
@@ -242,13 +253,13 @@ def normalise_spectograms(spect, rootdir='./dataset/processed/'):
             for f in files:
                 filepath = os.path.join(rootdir, id, ctx, f)
                 data = torch.load(filepath)
-                data = (data - data.mean())/data.std()
+                data = (data - data.mean()) / data.std()
                 torch.save(data, filepath)
     return
 
 
 if __name__ == '__main__':
-    dataset_to_wav()
+    #    dataset_to_wav()
     dataset_to_pt()
-    gen_phases('./dataset/processed/', train_split=0.7, valid_split=0.15, test_split=0.15)
-    #check_sample_rates()
+#    gen_phases('./dataset/processed/', train_split=0.7, valid_split=0.15, test_split=0.15)
+# check_sample_rates()
