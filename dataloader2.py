@@ -45,7 +45,7 @@ class VoxDataset(Dataset):
         label = sample_meta['id']
         full_path = os.path.join(self.rootpath, sample_path)
         spec = torch.load(full_path)
-        return label, spec
+        return label, spec.transpose(dim0=1, dim1=2)
 
 
 class VoxDataloader(pl.LightningDataModule):
