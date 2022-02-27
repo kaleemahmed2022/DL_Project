@@ -131,7 +131,7 @@ if __name__ == '__main__':
     dataloader = VoxDataloader(train, valid, test)
 
     # Create model
-    model = ResNet34_clean(num_classes=4, lr=1e-3)
+    model = ResNet34_clean()
 
     # quick test
     pred = model.predict_proba(test[0][1].unsqueeze(0))
@@ -141,4 +141,3 @@ if __name__ == '__main__':
     tb_logger = pl_loggers.TensorBoardLogger('./Logs/', name="TestRun")
     trainer = pl.Trainer(logger= tb_logger, max_epochs=20, tpu_cores=None, gpus=None)
     trainer.fit(model, dataloader)
-    
