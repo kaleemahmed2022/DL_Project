@@ -5,12 +5,13 @@ import pytorch_lightning.loggers as pl_loggers
 import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
-from dataloader2 import VoxDataset
+from dataloader2 import VoxDataset, VoxDataloader
 
 
 class SoftmaxNet(pl.LightningModule):
 
     def __init__(self):
+        super(SoftmaxNet, self).__init__()
         self.loss = None
         self.stack = None
         pass
@@ -18,8 +19,8 @@ class SoftmaxNet(pl.LightningModule):
     def forward(self, x):
         return self.stack(x)
 
-    def predict_probs(self, x):
-        return self.softmax(self.stack(x))
+    def predict_proba(self, x):
+        return nn.Softmax(self.stack(x))
 
     def predict(self, x):
         return np.argmax(self.predict_probs(x))
@@ -45,6 +46,7 @@ class SoftmaxNet(pl.LightningModule):
 class VGGnet(SoftmaxNet):
 
     def __init__(self, num_classes=4):
+        SoftmaxNet.__init__(self)
         super(VGGnet, self).__init__()
 
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=96, kernel_size=7, stride=2, padding=1)
@@ -78,5 +80,12 @@ if __name__ == '__main__':
 
     datasets = [train, valid, test]
 
-    #Load dataloader
-    dataloader =
+    # Load dataloader
+    dataloader = VoxDataloader(train, valid, test)
+
+    # Create model
+    model = VGGnet(num_classes=4)
+
+    # quick test
+    pred = model.predict_proba(test[0][1])
+    print(pred)

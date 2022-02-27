@@ -3,8 +3,7 @@ quick script to take .m4a data directly from the vox dataset (in ./dataset/raw/)
 format. Can also include further preproessing steps here if necessary.
 '''
 import os
-
-os.system('conda install -c main ffmpeg')  # need this for pydub to function
+#os.system('conda install -c main ffmpeg')  # need this for pydub to function
 from pydub import AudioSegment
 from tqdm import tqdm
 import pandas as pd
@@ -103,6 +102,7 @@ def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
     iden_split = pd.DataFrame(columns=['phase', 'path', 'id', 'context'])
     ids = os.listdir(DATAPATH)
     if '.DS_Store' in ids: ids.remove('.DS_Store')
+    if 'phase_map.csv' in ids: ids.remove('phase_map.csv')
     for id in tqdm(ids):  # run a proc bar just to keep track
 
         contexts = os.listdir(os.path.join(DATAPATH, id))
@@ -260,6 +260,6 @@ def normalise_spectograms(spect, rootdir='./dataset/processed/'):
 
 if __name__ == '__main__':
     #    dataset_to_wav()
-    dataset_to_pt()
-#    gen_phases('./dataset/processed/', train_split=0.7, valid_split=0.15, test_split=0.15)
+    #dataset_to_pt()
+    gen_phases('./dataset/spectrograms/', train_split=0.7, valid_split=0.15, test_split=0.15)
 # check_sample_rates()

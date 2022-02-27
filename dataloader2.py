@@ -40,7 +40,7 @@ class VoxDataset(Dataset):
 
         '''
 
-        sample_meta = self.dataset[idx]
+        sample_meta = self.dataset.iloc[idx]
         sample_path = sample_meta['path']
         label = sample_meta['id']
         full_path = os.path.join(self.rootpath, sample_path)
