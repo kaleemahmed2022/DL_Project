@@ -5,8 +5,7 @@ import pytorch_lightning.loggers as pl_loggers
 import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
-
-import dataloader2
+from dataloader2 import VoxDataset
 
 
 class SoftmaxNet(pl.LightningModule):
@@ -71,3 +70,13 @@ class VGGnet(SoftmaxNet):
                                     self.fc7,
                                     self.fc8)
 
+
+if __name__ == '__main__':
+    train = VoxDataset('./dataset/spectrograms/', 'train')
+    valid = VoxDataset('./dataset/spectrograms/', 'validation')
+    test = VoxDataset('./dataset/spectrograms/', 'test')
+
+    datasets = [train, valid, test]
+
+    #Load dataloader
+    dataloader =

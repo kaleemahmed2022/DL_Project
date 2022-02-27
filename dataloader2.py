@@ -1,7 +1,8 @@
 import os
 import pandas as pd
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
+import pytorch_lightning as pl
 
 
 class VoxDataset(Dataset):
@@ -45,3 +46,35 @@ class VoxDataset(Dataset):
         full_path = os.path.join(self.rootpath, sample_path)
         spec = torch.load(full_path)
         return label, spec
+
+
+class VoxDataloader(pl.LightningDataModule):
+
+    def __init__(self, trainDataSet, validDataSet, testDataSet, num_workers=2,
+                 batch_size = 32):
+
+        super().__init__()
+        self.num_workers = num_workers
+        self.batch_size = batch_size
+
+        self.train = trainDataSet
+        self.val = validDataSet
+        self.test = testDataSet
+
+    def train_dataloader(self):
+        return DataLoader(self.train, batch_size = self.batch_size, shuffle=True, num_workers = self.num_workers)
+
+    def val_dataloader(self):
+        return DataLoader(self.val, batch_size = self.batch_size, shuffle=False, num_workers = self.num_workers)
+
+    def test_dataloader(self):
+        return DataLoader(self.test, batch_size = self.batch_size, shuffle=False, num_workers = self.num_workers)
+
+
+if __name__ == '__main__':
+    _root = './dataset/spectrograms/'
+    train = VoxDataset(_root, 'train')
+    valid = VoxDataset(_root, 'validation')
+    test = VoxDataset(_root, 'test')
+
+    dataloader = VoxDataloader(train, valid, test)
