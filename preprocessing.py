@@ -260,7 +260,7 @@ def normalise_spectograms(spect, rootdir='./dataset/processed/'):
 
 
 if __name__ == '__main__':
-    #    dataset_to_wav()
+    dataset_to_wav()
     dataset_to_pt()
-    #gen_phases('./dataset/spectrograms/', train_split=0.7, valid_split=0.15, test_split=0.15)
+    gen_phases('./dataset/spectrograms/', train_split=0.7, valid_split=0.15, test_split=0.15)
 # check_sample_rates()
