@@ -108,7 +108,7 @@ def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
 
         contexts = os.listdir(os.path.join(DATAPATH, id))
         phases = list(np.random.choice([1, 2, 3], p=splits, size=len(contexts)))
-        id_int = int(float(id.replace('id', ''))) - 1
+        id_int = int(id.replace('id', '')) - 1
 
         if '.DS_Store' in contexts: contexts.remove('.DS_Store')
         for ctx in contexts:
