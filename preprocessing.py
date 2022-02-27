@@ -2,19 +2,20 @@
 quick script to take .m4a data directly from the vox dataset (in ./dataset/raw/) and convert to mono WAV
 format. Can also include further preproessing steps here if necessary.
 '''
-
-from pydub import AudioSegment
 import os
+os.system('conda install -c main ffmpeg')  # need this for pydub to function
+from pydub import AudioSegment
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import librosa
 import librosa.display
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import wave
 import torch
-
-os.system('conda install -c main ffmpeg')  # need this for pydub to function
+from torchvision import transforms
 
 
 def mkdir_if_not_exists(path):
@@ -56,30 +57,23 @@ def m4a_to_wav(input_path, output_path):
     file_handle = track.export(output_path, format='wav')  # export the wav
     return
 
-def wav_to_spectrogram(input_path):
+def wav_to_spectrogram(input_path, output_path):
     '''
 
     Args:
         input_path: path to the wav file
-        output_graph: mel spectrogram and mfcc output
+        output_path: normalized spectrogram as a tensor
 
     Returns: None
 
     '''
-    x, sr = librosa.load(input_path, sr=44100)
-    S = librosa.feature.melspectrogram(x, sr=sr, n_mels=128,
-                                       fmax=8000)
-    mfccs = librosa.feature.mfcc(x, sr=sr, n_mfcc=40)
-    fig, ax = plt.subplots(nrows=2, sharex=True)
-    img = librosa.display.specshow(librosa.power_to_db(S, ref=np.max),
-                                   x_axis='time', y_axis='mel', fmax=8000,
-                                   ax=ax[0])
-    fig.colorbar(img, ax=[ax[0]])
-    ax[0].set(title='Mel spectrogram')
-    ax[0].label_outer()
-    img = librosa.display.specshow(mfccs, x_axis='time', ax=ax[1])
-    fig.colorbar(img, ax=[ax[1]])
-    ax[1].set(title='MFCC')
+    x, sr = librosa.load(input_path, sr=16000, mono=True, duration=3)
+    X = librosa.stft(x)
+    Xdb = librosa.amplitude_to_db(np.abs(X))
+    data = (Xdb - Xdb.mean()) / X.std()
+    totensor = transforms.ToTensor()
+    tensor = totensor(data)
+    torch.save(tensor, output_path)
     return
 
 def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
@@ -193,7 +187,36 @@ def dataset_to_wav():
                            os.path.join(procpath, f[:-3] + 'wav'))
     return
 
+def dataset_to_pt():
+    '''
 
+    Scans through all subdirectories of ./dataset/processed/, and recreates them in ./dataset/spectrogram/ (writing new
+    directories if needed), and converting the wav files into pt files with spectrograms
+
+    '''
+    rootdir = './dataset/processed/'
+    outdir = './dataset/spectrograms/'
+    ids = os.listdir(rootdir)
+    if '.DS_Store' in ids: ids.remove('.DS_Store')
+    for id in tqdm(ids):  # run a proc bar just to keep track
+
+        contexts = os.listdir(os.path.join(rootdir, id))
+        if '.DS_Store' in contexts: contexts.remove('.DS_Store')
+        for ctx in contexts:
+
+            rawpath = os.path.join(rootdir, id, ctx)
+            procpath = os.path.join(outdir, id, ctx)
+            mkdir_if_not_exists(procpath)
+
+            files = os.listdir(rawpath)
+            if '.DS_Store' in files: files.remove('.DS_Store')
+            for f in files:
+                print(os.path.join(rawpath, f))
+                print(os.path.join(procpath, f[:-3] + 'pt'))
+                wav_to_spectrogram(os.path.join(rawpath, f),
+                                   os.path.join(procpath, f[:-3] + 'pt'))
+
+    return
 def normalise_spectograms(spect, rootdir='./dataset/processed/'):
     '''
 
@@ -225,5 +248,6 @@ def normalise_spectograms(spect, rootdir='./dataset/processed/'):
 
 if __name__ == '__main__':
     dataset_to_wav()
+    dataset_to_pt()
     gen_phases('./dataset/processed/', train_split=0.7, valid_split=0.15, test_split=0.15)
     #check_sample_rates()
