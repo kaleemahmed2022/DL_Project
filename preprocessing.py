@@ -126,27 +126,6 @@ def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
     return
 
 
-# def convert_sample_rate(filename):
-#    '''
-#    NOT NEEDED??
-#    converts and overwrites a .wav file at ./filename to 16kHz
-#    Args:
-#        filename: path + name (ending in .wav) of file to be converted
-#    Returns:
-#    '''
-#    rootdir = './dataset/processed/'
-#    ids = os.listdir(rootdir)
-#    for id in tqdm(ids):
-#
-#        contexts = os.listdir(os.path.join(rootdir, id))
-#        if '.DS_Store' in contexts: contexts.remove('.DS_Store')
-#        for ctx in contexts:
-#            path = os.path.join(rootdir, id, ctx)
-#            files = os.listdir(path)
-#            for f in files:
-#                librosa.load(os.path.join(path, f), sr=16000)
-
-
 def check_sample_rates():
     '''
 
@@ -171,25 +150,23 @@ def check_sample_rates():
     return
 
 
-def dataset_to_wav():
+def dataset_to_wav(readpath, outpath):
     '''
 
     Scans through all subdirectories of ./dataset/raw/, and recreates them in ./dataset/processed/ (writing new
     directories if needed), and converting the m4a files into wav format
     '''
 
-    rootdir = './dataset/raw/'
-    outdir = './dataset/processed/'
-    ids = os.listdir(rootdir)
+    ids = os.listdir(readpath)
     if '.DS_Store' in ids: ids.remove('.DS_Store')
     for id in tqdm(ids):  # run a proc bar just to keep track
 
-        contexts = os.listdir(os.path.join(rootdir, id))
+        contexts = os.listdir(os.path.join(readpath, id))
         if '.DS_Store' in contexts: contexts.remove('.DS_Store')
         for ctx in contexts:
 
-            rawpath = os.path.join(rootdir, id, ctx)
-            procpath = os.path.join(outdir, id, ctx)
+            rawpath = os.path.join(readpath, id, ctx)
+            procpath = os.path.join(outpath, id, ctx)
             mkdir_if_not_exists(procpath)
 
             files = os.listdir(rawpath)
@@ -200,25 +177,24 @@ def dataset_to_wav():
     return
 
 
-def dataset_to_pt():
+def dataset_to_pt(readpath, outpath):
     '''
 
     Scans through all subdirectories of ./dataset/processed/, and recreates them in ./dataset/spectrogram/ (writing new
     directories if needed), and converting the wav files into pt files with spectrograms
 
     '''
-    rootdir = './dataset/processed/'
-    outdir = './dataset/spectrograms/'
-    ids = os.listdir(rootdir)
+
+    ids = os.listdir(readpath)
     if '.DS_Store' in ids: ids.remove('.DS_Store')
     for id in tqdm(ids):  # run a proc bar just to keep track
 
-        contexts = os.listdir(os.path.join(rootdir, id))
+        contexts = os.listdir(os.path.join(readpath, id))
         if '.DS_Store' in contexts: contexts.remove('.DS_Store')
         for ctx in contexts:
 
-            rawpath = os.path.join(rootdir, id, ctx)
-            procpath = os.path.join(outdir, id, ctx)
+            rawpath = os.path.join(readpath, id, ctx)
+            procpath = os.path.join(outpath, id, ctx)
             mkdir_if_not_exists(procpath)
 
             files = os.listdir(rawpath)
@@ -229,38 +205,12 @@ def dataset_to_pt():
 
     return
 
-
-def normalise_spectograms(spect, rootdir='./dataset/processed/'):
-    '''
-
-    Normalises the amplitudes in a spectogram by (val-mean)/stdev
-
-    Args:
-        spect (str): path to spectogram file in binary torch format (.pt)
-        rootdir (str): string to the root of the data directory
-
-    Rewrites after normalising the spectogram. Same place it was read from
-
-    '''
-
-    ids = os.listdir(rootdir)
-    if 'iden_split.csv' in ids: ids.remove('iden_split.csv')
-    for id in tqdm(ids):
-        contexts = os.listdir(os.path.join(rootdir, id))
-        if '.DS_Store' in contexts: contexts.remove('.DS_Store')
-        for ctx in contexts:
-            path = os.path.join(rootdir, id, ctx)
-            files = os.listdir(path)
-            for f in files:
-                filepath = os.path.join(rootdir, id, ctx, f)
-                data = torch.load(filepath)
-                data = (data - data.mean()) / data.std()
-                torch.save(data, filepath)
-    return
-
-
 if __name__ == '__main__':
-    dataset_to_wav()
-    dataset_to_pt()
-    gen_phases('./dataset/spectrograms/', train_split=0.7, valid_split=0.15, test_split=0.15)
-# check_sample_rates()
+
+    m4apath = './dataset/raw/'
+    wavpath = './dataset/wav/'
+    sptpath = './dataset/spectrograms/'
+
+    dataset_to_wav(m4apath, wavpath)
+    dataset_to_pt(wavpath, sptpath)
+    gen_phases(sptpath, train_split=0.7, valid_split=0.15, test_split=0.15)

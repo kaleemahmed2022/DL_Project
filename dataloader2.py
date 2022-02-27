@@ -19,10 +19,11 @@ class VoxDataset(Dataset):
 
         map_data = pd.read_csv(os.path.join(rootpath, 'phase_map.csv'))[['phase', 'path', 'id', 'context']]
 
-        phase_int = {'train':1, 'validation':2, 'test':3}[phase] # map phase onto the representative int
+        phase_int = {'train': 1, 'validation': 2, 'test': 3}[phase]  # map phase onto the representative int
 
         mask = (map_data['phase'] == phase_int)
         self.dataset = map_data[['path', 'id', 'context']][mask].reset_index(drop=True)
+        self.dataset['id_int'] = self.dataset.apply(lambda x: list(self.dataset['id'].unique()).index(x['id']))
 
     def __len__(self):
         return len(self.dataset)
@@ -42,7 +43,7 @@ class VoxDataset(Dataset):
 
         sample_meta = self.dataset.iloc[idx]
         sample_path = sample_meta['path']
-        label = sample_meta['id']
+        label = sample_meta['id_int']
         full_path = os.path.join(self.rootpath, sample_path)
         spec = torch.load(full_path)
         return label, spec.transpose(dim0=1, dim1=2)
@@ -51,8 +52,7 @@ class VoxDataset(Dataset):
 class VoxDataloader(pl.LightningDataModule):
 
     def __init__(self, trainDataSet, validDataSet, testDataSet, num_workers=2,
-                 batch_size = 32):
-
+                 batch_size=32):
         super().__init__()
         self.num_workers = num_workers
         self.batch_size = batch_size
@@ -62,13 +62,13 @@ class VoxDataloader(pl.LightningDataModule):
         self.test = testDataSet
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size = self.batch_size, shuffle=True, num_workers = self.num_workers)
+        return DataLoader(self.train, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)
 
     def val_dataloader(self):
-        return DataLoader(self.val, batch_size = self.batch_size, shuffle=False, num_workers = self.num_workers)
+        return DataLoader(self.val, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
 
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size = self.batch_size, shuffle=False, num_workers = self.num_workers)
+        return DataLoader(self.test, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
 
 
 if __name__ == '__main__':
