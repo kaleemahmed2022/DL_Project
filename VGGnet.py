@@ -61,6 +61,7 @@ class VGGnet(SoftmaxNet):
         self.mpool5 = nn.MaxPool2d(kernel_size=(5, 3), stride=(3, 2))
 
         # todo: find shape out of mpool5 to match to fc7
+        self.fc6 = nn.Conv2d(in_channels=256, out_channels=4096, kernel_size=(9, 1))
         self.fc7 = nn.Linear(in_features=4096, out_features=1024)
         self.fc8 = nn.Linear(in_features=1024, out_features=num_classes)
 
@@ -69,6 +70,7 @@ class VGGnet(SoftmaxNet):
                                     self.conv3, nn.ReLU(),
                                     self.conv4, nn.ReLU(),
                                     self.conv5, nn.ReLU(), self.mpool5,
+                                    self.fc6, nn.ReLU(),
                                     self.fc7,
                                     self.fc8)
 

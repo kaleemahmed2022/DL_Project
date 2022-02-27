@@ -78,7 +78,7 @@ def wav_to_spectrogram(input_path, output_path,
     Nw = int(float(Tw)/1000 * sr)
 
     x, sr = librosa.load(input_path, sr=sr, mono=True, duration=3)
-    X = librosa.stft(x, hop_length=Ns, win_length=Nw) # FFT in complex numbers
+    X = librosa.stft(x, hop_length=Ns, win_length=Nw, n_fft=1024) # FFT in complex numbers
     Xdb = np.abs(X) # abs value to take amplitude data of complex matrix
     data = (Xdb - Xdb.mean()) / X.std()
     # NB: unsqueeze needed to replicate dimension of number of channel (just 1 in our case):
