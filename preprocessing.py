@@ -11,7 +11,6 @@ import numpy as np
 import librosa
 import librosa.display
 import matplotlib
-matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import wave
 import torch
@@ -211,8 +210,6 @@ def dataset_to_pt():
             files = os.listdir(rawpath)
             if '.DS_Store' in files: files.remove('.DS_Store')
             for f in files:
-                print(os.path.join(rawpath, f))
-                print(os.path.join(procpath, f[:-3] + 'pt'))
                 wav_to_spectrogram(os.path.join(rawpath, f),
                                    os.path.join(procpath, f[:-3] + 'pt'))
 
