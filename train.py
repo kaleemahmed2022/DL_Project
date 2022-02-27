@@ -11,7 +11,7 @@ from dataloader import VoxLoader
 from utils import Normalize, ToTensor
 from torchvision.transforms import Compose
 
-DATASET_PATH = './dataset/processed/'
+DATASET_PATH = './dataset/spectrograms/'
 LOG_DIR = './logs/'
 total_epochs = 30
 

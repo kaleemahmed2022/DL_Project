@@ -1,11 +1,49 @@
 import torch
 import torch.nn as nn
+import pytorch_lightning as pl
+import pytorch_lightning.loggers as pl_loggers
 import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
 
+import dataloader2
 
-class VGGnet(nn.Module):
+
+class SoftmaxNet(pl.LightningModule):
+
+    def __init__(self):
+        self.loss = None
+        self.stack = None
+        pass
+
+    def forward(self, x):
+        return self.stack(x)
+
+    def predict_probs(self, x):
+        return self.softmax(self.stack(x))
+
+    def predict(self, x):
+        return np.argmax(self.predict_probs(x))
+
+    def _step(self, batch, batch_idx, phase):
+        label, x = batch
+        logits = self(x)
+        loss = self.loss(logits, label)
+        tensorboard_logs = {'loss': {phase: loss.detach()}}
+        self.log("{} loss".format(phase), loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        return {"loss": loss, "log": tensorboard_logs}
+
+    def training_step(self, batch, batch_idx):
+        self._step(batch, batch_idx, "train")
+
+    def validation_step(self, batch, batch_idx):
+        self._step(batch, batch_idx, "validation")
+
+    def test_step(self, batch, batch_idx):
+        self._step(batch, batch_idx, "test")
+
+
+class VGGnet(SoftmaxNet):
 
     def __init__(self, num_classes=4):
         super(VGGnet, self).__init__()
@@ -33,11 +71,3 @@ class VGGnet(nn.Module):
                                     self.fc7,
                                     self.fc8)
 
-    def forward(self, x):
-        return self.stack(x)
-
-    def predict_probs(self,x):
-        return self.softmax(self.stack(x))
-
-    def predict(self, x):
-        return np.argmax(self.predict_probs(x))
