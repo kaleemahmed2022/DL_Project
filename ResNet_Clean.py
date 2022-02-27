@@ -69,9 +69,9 @@ class ResidualBlock(SoftmaxNet):
         out = self.relu(out)
         return out
 
-class ResNet34(SoftmaxNet):
+class ResNet34_clean(SoftmaxNet):
     def __init__(self):
-        super(ResNet34,self).__init__()
+        super(ResNet34_clean,self).__init__()
 
         self.block1 = nn.Sequential(
             nn.Conv2d(1,64,kernel_size=2,stride=2,padding=3,bias=False),
@@ -119,3 +119,26 @@ class ResNet34(SoftmaxNet):
         x2 = self.fc2(x)
         x3 = self.fc3(x)
         return x1,x2,x3
+
+if __name__ == '__main__':
+    train = VoxDataset('./dataset/spectrograms/', 'train')
+    valid = VoxDataset('./dataset/spectrograms/', 'validation')
+    test = VoxDataset('./dataset/spectrograms/', 'test')
+
+    datasets = [train, valid, test]
+
+    # Load dataloader
+    dataloader = VoxDataloader(train, valid, test)
+
+    # Create model
+    model = ResNet34_clean(num_classes=4, lr=1e-3)
+
+    # quick test
+    pred = model.predict_proba(test[0][1].unsqueeze(0))
+    print(pred)
+
+    # give training a go
+    tb_logger = pl_loggers.TensorBoardLogger('./Logs/', name="TestRun")
+    trainer = pl.Trainer(logger= tb_logger, max_epochs=20, tpu_cores=None, gpus=None)
+    trainer.fit(model, dataloader)
+    
