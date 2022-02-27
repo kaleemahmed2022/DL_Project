@@ -65,7 +65,7 @@ def cmvnw(vec, win_size=301, variance_normalization=False):
 class VoxLoader(Dataset):
 
     def __init__(self, path, train, transform=None):
-        iden_split_path = os.path.join(path, 'phase_map.csv')
+        iden_split_path = os.path.join(path, 'iden_split.csv')
         split = pd.read_csv(iden_split_path)[['phase', 'path']]
 
         if train:
