@@ -81,7 +81,8 @@ def wav_to_spectrogram(input_path, output_path,
     X = librosa.stft(x, hop_length=Ns, win_length=Nw) # FFT in complex numbers
     Xdb = np.abs(X) # abs value to take amplitude data of complex matrix
     data = (Xdb - Xdb.mean()) / X.std()
-    torch.save(torch.tensor(data), output_path) # the prior transform was messing with the datashape
+    # NB: unsqueeze needed to replicate dimension of number of channel (just 1 in our case):
+    torch.save(torch.tensor(data).unsqueeze(0), output_path) # the prior transform was messing with the datashape
     return
 
 
@@ -260,6 +261,6 @@ def normalise_spectograms(spect, rootdir='./dataset/processed/'):
 
 if __name__ == '__main__':
     #    dataset_to_wav()
-    #dataset_to_pt()
-    gen_phases('./dataset/spectrograms/', train_split=0.7, valid_split=0.15, test_split=0.15)
+    dataset_to_pt()
+    #gen_phases('./dataset/spectrograms/', train_split=0.7, valid_split=0.15, test_split=0.15)
 # check_sample_rates()

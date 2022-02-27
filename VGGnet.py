@@ -87,5 +87,5 @@ if __name__ == '__main__':
     model = VGGnet(num_classes=4)
 
     # quick test
-    pred = model.predict_proba(test[0][1])
+    pred = model.predict_proba(test[0][1].unsqueeze(0))
     print(pred)
