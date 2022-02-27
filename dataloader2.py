@@ -23,7 +23,8 @@ class VoxDataset(Dataset):
 
         mask = (map_data['phase'] == phase_int)
         self.dataset = map_data[['path', 'id', 'context']][mask].reset_index(drop=True)
-        self.dataset['id_int'] = self.dataset.apply(lambda x: list(self.dataset['id'].unique()).index(x['id']))
+
+        self.dataset['id_int'] = self.dataset.apply(lambda x: list(self.dataset['id'].unique()).index(x['id']), axis=1)
 
     def __len__(self):
         return len(self.dataset)
