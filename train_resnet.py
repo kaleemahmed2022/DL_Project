@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset
 from ResNet import *
-from dataloader import VoxLoader
+from dataloader2 import VoxDataset
 from utils import Normalize, ToTensor
 from torchvision.transforms import Compose
 
@@ -35,10 +35,10 @@ transforms = Compose([
     ToTensor()
 ])
 
-trainset = VoxLoader(DATASET_PATH, train=True, transform=transforms)
+trainset = VoxDataset(DATASET_PATH, train=True)
 trainsetloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, num_workers=4, shuffle=True)
 
-testset = VoxLoader(DATASET_PATH, train=False, transform=transforms)
+testset = VoxDataset(DATASET_PATH, train=False, transform=transforms)
 testsetloader = torch.utils.data.DataLoader(testset, batch_size=1, num_workers=8)
 
 criterion = nn.CrossEntropyLoss()
