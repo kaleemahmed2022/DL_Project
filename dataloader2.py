@@ -54,7 +54,7 @@ class VoxDataloader(pl.LightningDataModule):
 
     def __init__(self, trainDataSet, validDataSet, testDataSet, num_workers=2,
                  batch_size=32):
-        super().__init__()
+        super(VoxDataloader).__init__()
         self.num_workers = num_workers
         self.batch_size = batch_size
 

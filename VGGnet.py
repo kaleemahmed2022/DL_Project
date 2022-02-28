@@ -179,11 +179,10 @@ if __name__ == '__main__':
     datasets = [train, valid, test]
 
     # Load dataloader
-    dataloader = VoxDataloader(train, valid, test)
+    dataloader = VoxDataloader(train, valid, test, batch_size=1)
 
     # Create model
-    # model = VGGnet(num_classes=4, lr=1e-3)
-    model = ResNet34(num_classes=4, lr=1e-3)
+    model = VGGnet(num_classes=4, lr=1e-3)
 
     # quick test
     pred = model.predict_proba(test[0][1].unsqueeze(0))

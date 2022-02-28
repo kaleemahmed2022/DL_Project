@@ -27,8 +27,9 @@ def mkdir_if_not_exists(path):
 
     '''
     path_splits = path.split('/')
-    path_splits.remove('.')
-    incremental_path = '.'  # we need to iterate through all the subdirectories in 'path' to incrememtally create them
+    #if '.' in path_splits: path_splits.remove('.')
+    if '' in path_splits: path_splits[0] = '/'
+    incremental_path = ''  # we need to iterate through all the subdirectories in 'path' to incrememtally create them
     for subpath in path_splits:
 
         incremental_path = os.path.join(incremental_path,
@@ -207,9 +208,9 @@ def dataset_to_pt(readpath, outpath):
 
 if __name__ == '__main__':
 
-    m4apath = './dataset/raw/'
-    wavpath = './dataset/wav/'
-    sptpath = './dataset/spectrograms/'
+    m4apath = '/Users/jameswilkinson/Downloads/minidata/raw/'
+    wavpath = '/Users/jameswilkinson/Downloads/minidata/wav/'
+    sptpath = '/Users/jameswilkinson/Downloads/minidata/spectrograms/'
 
     dataset_to_wav(m4apath, wavpath)
     dataset_to_pt(wavpath, sptpath)
