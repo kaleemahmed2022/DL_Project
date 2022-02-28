@@ -8,6 +8,7 @@ import pytorch_lightning as pl
 class VoxDataset(Dataset):
 
     def __init__(self, rootpath, phase='train'):
+        super(Dataset, self).__init__()
         '''
 
         Args: rootpath: path to the parent folder of data. typically ./dataset/processed/
@@ -54,13 +55,13 @@ class VoxDataloader(pl.LightningDataModule):
 
     def __init__(self, trainDataSet, validDataSet, testDataSet, num_workers=2,
                  batch_size=32):
-        super(VoxDataloader).__init__()
+        super(VoxDataloader, self).__init__()
         self.num_workers = num_workers
         self.batch_size = batch_size
 
-        self.train = trainDataSet
-        self.val = validDataSet
-        self.test = testDataSet
+        self.train = [[x[0], x[1]] for x in trainDataSet]
+        self.val = [[x[0], x[1]] for x in validDataSet]
+        self.test = [[x[0], x[1]] for x in testDataSet]
 
     def train_dataloader(self):
         return DataLoader(self.train, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)
