@@ -227,6 +227,7 @@ class ResNet34_DateModule(pl.LightningDataModule):
     def test_dataloader(self):
         return torch.utils.data.DataLoader(self.res_test, batch_size=32, shuffle=False)
 
+
 model = ResNet34()
 data_module = VoxDataloader(train, valid, test)
 #  dataloader = VoxDataloader(train, valid, test)
