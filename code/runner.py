@@ -2,7 +2,8 @@ import pytorch_lightning.loggers as pl_loggers
 from pytorch_lightning.callbacks import EarlyStopping
 import pytorch_lightning as pl
 
-def run(config, datapath, Dataloader, Model, logpath):
+def run(config, datapath, Dataloader, Model, logpath,
+  tpu_cores=None, gpu_cores=None):
     '''
 
     Wrapper to run a model from a config file, output to torch lightning logs in systematic fashion
@@ -17,7 +18,7 @@ def run(config, datapath, Dataloader, Model, logpath):
 
     logname = "opt{}_lr{}_reg{}_drop{}_bn{}_gc{}".format(
         *[config[s] for s in ['optimizer', 'lr', 'L2', 'dropout', 'batch_norm', 'gradient_clipping']])
-
+    print("LOGNAME: {}".format(logname))
     dataloader = Dataloader(datapath, batch_size=config['batch_size'])
     model = Model(num_classes=dataloader.num_classes(), lr=config['lr'], batch_norm=config['batch_norm'])
     tb_logger = pl_loggers.TensorBoardLogger(logpath, name=logname)
