@@ -130,24 +130,25 @@ def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
     if 'phase_map.csv' in ids: ids.remove('phase_map.csv')
 
     for id in tqdm(ids):  # run a proc bar just to keep track
+        if "icon" not in id.lower():
+            contexts = os.listdir(os.path.join(DATAPATH, id))
+            phases = list(np.random.choice([1, 2, 3], p=splits, size=len(contexts)))
+            id_int = int(id.replace('id', '')) - 1
 
-        contexts = os.listdir(os.path.join(DATAPATH, id))
-        phases = list(np.random.choice([1, 2, 3], p=splits, size=len(contexts)))
-        id_int = int(id.replace('id', '')) - 1
+            if '.DS_Store' in contexts: contexts.remove('.DS_Store')
+            for ctx in contexts:
+                if 'icon' not in ctx.lower():
 
-        if '.DS_Store' in contexts: contexts.remove('.DS_Store')
-        for ctx in contexts:
+                    rawpath = os.path.join(DATAPATH, id, ctx)
 
-            rawpath = os.path.join(DATAPATH, id, ctx)
-
-            phase = phases.pop(0)
-
-            files = os.listdir(rawpath)
-            if '.DS_Store' in files: files.remove('.DS_Store')
-            for f in files:
-                filepath = os.path.join(id, ctx, f)
-                iden_split.loc[len(iden_split)] = [phase, filepath, id_int, ctx]
-    iden_split.to_csv(os.path.join(DATAPATH, 'phase_map.csv'))
+                    phase = phases.pop(0)
+                    files = os.listdir(rawpath)
+                    if '.DS_Store' in files: files.remove('.DS_Store')
+                    for f in files:
+                        if "icon" not in f.lower():
+                            filepath = os.path.join(id, ctx, f)
+                            iden_split.loc[len(iden_split)] = [phase, filepath, id_int, ctx]
+        iden_split.to_csv(os.path.join(DATAPATH, 'phase_map.csv'))
     return
 
 
@@ -279,11 +280,12 @@ if __name__ == '__main__':
 #     print(os.getcwd())
 #     print(os.path.dirname(os.path.realpath('/Users/devyanigauri/Documents/GitHub/DL_Project/dataset'
 # )))
-    m4apath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/raw'
-    wavpath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/wav'
-    sptpath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/spectrograms'
+    #m4apath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/raw'
+    #wavpath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/wav'
+    #sptpath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/spectrograms'
+    m4apath = '/Users/jameswilkinson/Downloads/dev/aac/'
 
     # dataset_to_wav(m4apath, wavpath)
     # dataset_to_pt(m4apath, sptpath)
     # noise_datasets(m4apath)
-    # gen_phases(m4apath, train_split=0.7, valid_split=0.15, test_split=0.15)
+    gen_phases(m4apath, train_split=0.7, valid_split=0.15, test_split=0.15)
