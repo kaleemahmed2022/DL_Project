@@ -60,7 +60,7 @@ class VoxDataloader(pl.LightningDataModule):
         self.batch_size = batch_size
 
         self.train = trainDataSet
-        self.valid = validDataSet
+        self.val = validDataSet
         self.test = testDataSet
 
     def train_dataloader(self):
