@@ -41,7 +41,7 @@ class SoftmaxNet(pl.LightningModule):
         logits = logits.squeeze(1)
         loss = self.loss(logits, label)
         tensorboard_logs = {'loss': {phase: loss.detach()}}
-        self.log("{} loss".format(phase), loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log("{}_loss".format(phase), loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return {"loss": loss, "log": tensorboard_logs}
 
     def training_step(self, batch, batch_idx):
