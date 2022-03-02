@@ -14,7 +14,6 @@ class VGGnet(SoftmaxNet):
         self.activation = nn.ReLU()
         self.batch_norm = batch_norm
         self.dropout = dropout
-        self.L1 = L1
         self.L2 = L2
 
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=96, kernel_size=7, stride=2, padding=1)
