@@ -53,15 +53,14 @@ class VoxDataset(Dataset):
 
 class VoxDataloader(pl.LightningDataModule):
 
-    def __init__(self, trainDataSet, validDataSet, testDataSet, num_workers=2,
-                 batch_size=32):
+    def __init__(self, path, num_workers=2, batch_size=32):
         super(VoxDataloader, self).__init__()
         self.num_workers = num_workers
         self.batch_size = batch_size
 
-        self.train = trainDataSet
-        self.val = validDataSet
-        self.test = testDataSet
+        self.train = VoxDataset(path, 'train')
+        self.val = VoxDataset(path, 'validation')
+        self.test = VoxDataset(path, 'test')
 
     def train_dataloader(self):
         return DataLoader(self.train, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)
@@ -71,6 +70,9 @@ class VoxDataloader(pl.LightningDataModule):
 
     def test_dataloader(self):
         return DataLoader(self.test, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
+
+    def num_classes(self):
+        return len(self.train.dataset['int_id'].unique())
 
 
 if __name__ == '__main__':
