@@ -146,30 +146,34 @@ def check_sample_rates():
     return
 
 
-def dataset_to_wav(readpath, outpath):
+def dataset_to_wav(readpath, outpath, filenames=None):
     '''
 
     Scans through all subdirectories of ./dataset/raw/, and recreates them in ./dataset/processed/ (writing new
     directories if needed), and converting the m4a files into wav format
     '''
 
-    ids = os.listdir(readpath)
+    if filenames is None:
+        ids = os.listdir(readpath)
+    else:
+        ids = filenames
+
     if '.DS_Store' in ids: ids.remove('.DS_Store')
     for id in tqdm(ids):  # run a proc bar just to keep track
 
         contexts = os.listdir(os.path.join(readpath, id))
         if '.DS_Store' in contexts: contexts.remove('.DS_Store')
         for ctx in contexts:
+            if "icon" not in ctx.lower():
+                rawpath = os.path.join(readpath, id, ctx)
+                procpath = os.path.join(outpath, id, ctx)
+                mkdir_if_not_exists(procpath)
 
-            rawpath = os.path.join(readpath, id, ctx)
-            procpath = os.path.join(outpath, id, ctx)
-            mkdir_if_not_exists(procpath)
-
-            files = os.listdir(rawpath)
-            if '.DS_Store' in files: files.remove('.DS_Store')
-            for f in files:
-                m4a_to_wav(os.path.join(rawpath, f),
-                           os.path.join(procpath, f[:-3] + 'wav'))
+                files = os.listdir(rawpath)
+                if '.DS_Store' in files: files.remove('.DS_Store')
+                for f in files:
+                    m4a_to_wav(os.path.join(rawpath, f),
+                               os.path.join(procpath, f[:-3] + 'wav'))
     return
 
 
