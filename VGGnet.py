@@ -1,22 +1,27 @@
-import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 import pytorch_lightning.loggers as pl_loggers
 import torch.optim as optim
-import torch.nn.functional as F
 import numpy as np
 from dataloader import VoxDataset, VoxDataloader
 
 
 class SoftmaxNet(pl.LightningModule):
 
-    def __init__(self, lr=1e-3):
+    def __init__(self, lr=1e-3, L2=0., optimizer='SGD'):
         super(SoftmaxNet, self).__init__()
         self.loss = nn.CrossEntropyLoss()
         self.lr = lr
+        self.L2 = L2
+        self.optimizer = optimizer
 
     def configure_optimizers(self):
-        return optim.Adam(self.parameters(), lr=self.lr)
+        if self.optimizer=='sgd':
+            return optim.SGD(self.parameters(), lr=self.lr, weight_decay=self.L2)
+        if self.optimizer=='adam':
+            return optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.L2)
+        else:
+            raise NameError("self.optimizer not configured. Invalid Value: {}".format(self.optimizer))
 
     def forward(self, x):
         pass
@@ -48,12 +53,15 @@ class SoftmaxNet(pl.LightningModule):
 
 class VGGnet(SoftmaxNet):
 
-    def __init__(self, num_classes=4, lr=1e-3, batch_norm=True):
-        SoftmaxNet.__init__(self, lr=lr)
+    def __init__(self, num_classes=4, lr=1e-3, batch_norm=True, dropout=0.5, L2=0.):
+        SoftmaxNet.__init__(self, lr=lr, L2=L2)
         super(VGGnet, self).__init__()
 
         self.activation = nn.ReLU()
         self.batch_norm = batch_norm
+        self.dropout = dropout
+        self.L1 = L1
+        self.L2 = L2
 
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=96, kernel_size=7, stride=2, padding=1)
         self.mpool1 = nn.MaxPool2d(kernel_size=3, stride=2)
@@ -89,6 +97,15 @@ class VGGnet(SoftmaxNet):
             self.seq5.append(nn.BatchNorm2d(num_features=256))
             self.seq6.append(nn.BatchNorm2d(num_features=4096))
             self.seq7.append(nn.BatchNorm1d(num_features=1024))
+
+            self.seq1.append(nn.dropout(dropout))
+            self.seq2.append(nn.dropout(dropout))
+            self.seq3.append(nn.dropout(dropout))
+            self.seq4.append(nn.dropout(dropout))
+            self.seq5.append(nn.dropout(dropout))
+            self.seq6.append(nn.dropout(dropout))
+            self.seq7.append(nn.dropout(dropout))
+
 
         self.seq1 = nn.Sequential(*self.seq1)
         self.seq2 = nn.Sequential(*self.seq2)
