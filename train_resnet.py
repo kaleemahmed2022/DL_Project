@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset
 from ResNet import *
-from dataloader2 import VoxDataset
+from dataloader import VoxDataset
 from utils import Normalize, ToTensor
 from torchvision.transforms import Compose
 

@@ -5,7 +5,7 @@ import pytorch_lightning.loggers as pl_loggers
 import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
-from dataloader2 import VoxDataset, VoxDataloader
+from dataloader import VoxDataset, VoxDataloader
 
 
 

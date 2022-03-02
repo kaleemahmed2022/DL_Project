@@ -11,7 +11,7 @@ from torch.utils.data import random_split
 from torchvision import transforms
 import torchvision.datasets as datasets
 import pytorch_lightning.loggers as pl_loggers
-from dataloader2 import VoxDataset
+from dataloader import VoxDataset
 
 
 # # 3x3 convolution
