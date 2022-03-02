@@ -80,6 +80,35 @@ def wav_to_spectrogram(input_path, output_path,
     torch.save(torch.tensor(data).unsqueeze(0), output_path) # the prior transform was messing with the datashape
     return
 
+def noise_tests(input_path,
+                       sr = 16e3,
+                       Ts = 10,
+                       Tw = 25):
+    '''
+
+    Args:
+        input_path: path to the wav file
+        output_path: normalized spectrogram as a tensor
+        sr = sample rate of wav requiried
+        Ts = time step (ms) of sliding fft window
+        Tw = window size of fft window (ms)
+
+    Returns: None
+
+    '''
+
+    Ns = int(float(Ts) / 1000 * sr)  # need to specify the size of the fft windows
+    Nw = int(float(Tw) / 1000 * sr)
+
+    # x, sr = librosa.load(input_path, sr=sr, mono=True, duration=3)
+    x, sr = librosa.load(input_path, sr=sr, mono=True)
+    # print(x)
+    dur = librosa.get_duration(x,sr)
+    noised = x + 0.009 * np.random.normal(0, 1, len(x))
+    # print(noised)
+    time_stretched = librosa.effects.time_stretch(x, 0.4)
+    # print(time_stretched)
+    return dur
 
 def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
     '''
@@ -213,12 +242,48 @@ def dataset_to_pt(readpath, outpath, filenames = None):
 
     return
 
+def noise_datasets(readpath, filenames = None):
+    '''
+
+    Scans through all subdirectories of ./dataset/processed/, and recreates them in ./dataset/spectrogram/ (writing new
+    directories if needed), and converting the wav files into pt files with spectrograms
+
+    added in filenames to isolate the filenames we want to perform spectrograms on
+    '''
+
+    if filenames is None:
+        ids = os.listdir(readpath)
+    else:
+        ids = filenames
+    durations = []
+    if '.DS_Store' in ids: ids.remove('.DS_Store')
+    for id in tqdm(ids):  # run a proc bar just to keep track
+
+        contexts = os.listdir(os.path.join(readpath, id))
+        if '.DS_Store' in contexts: contexts.remove('.DS_Store')
+        for ctx in contexts:
+
+            rawpath = os.path.join(readpath, id, ctx)
+            # procpath = os.path.join(outpath, id, ctx)
+            # mkdir_if_not_exists(procpath)
+
+            files = os.listdir(rawpath)
+            if '.DS_Store' in files: files.remove('.DS_Store')
+            for f in files:
+                durations.append(noise_tests(os.path.join(rawpath, f)))
+    print(durations)
+    print(max(durations))
+    return
+
 if __name__ == '__main__':
+#     print(os.getcwd())
+#     print(os.path.dirname(os.path.realpath('/Users/devyanigauri/Documents/GitHub/DL_Project/dataset'
+# )))
+    m4apath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/raw'
+    wavpath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/wav'
+    sptpath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/spectrograms'
 
-    m4apath = './dataset/raw/'
-    wavpath = '/Users/jameswilkinson/Downloads/minidata/wav/'
-    sptpath = '/Users/jameswilkinson/Downloads/minidata/spectrograms/'
-
-    #dataset_to_wav(m4apath, wavpath)
-    #dataset_to_pt(m4apath, sptpath)
-    gen_phases(m4apath, train_split=0.7, valid_split=0.15, test_split=0.15)
+    # dataset_to_wav(m4apath, wavpath)
+    # dataset_to_pt(m4apath, sptpath)
+    # noise_datasets(m4apath)
+    # gen_phases(m4apath, train_split=0.7, valid_split=0.15, test_split=0.15)
