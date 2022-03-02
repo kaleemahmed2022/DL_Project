@@ -48,7 +48,7 @@ class SoftmaxNet(pl.LightningModule):
         return self._step(batch, batch_idx, "train")
 
     def validation_step(self, batch, batch_idx):
-        return self._step(batch, batch_idx, "validation")
+        return self._step(batch, batch_idx, "val")
 
     def test_step(self, batch, batch_idx):
         return self._step(batch, batch_idx, "test")
