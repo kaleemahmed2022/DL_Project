@@ -1,20 +1,14 @@
-'''
-quick script to take .m4a data directly from the vox dataset (in ./dataset/raw/) and convert to mono WAV
-format. Can also include further preproessing steps here if necessary.
-'''
 import os
-#os.system('conda install -c main ffmpeg')  # need this for pydub to function
 from pydub import AudioSegment
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import librosa
 import librosa.display
-import matplotlib
-import matplotlib.pyplot as plt
 import wave
 import torch
-from torchvision import transforms
+import warnings
+warnings.filterwarnings('ignore')
 
 
 def mkdir_if_not_exists(path):
@@ -212,6 +206,6 @@ if __name__ == '__main__':
     wavpath = '/Users/jameswilkinson/Downloads/minidata/wav/'
     sptpath = '/Users/jameswilkinson/Downloads/minidata/spectrograms/'
 
-    dataset_to_wav(m4apath, wavpath)
-    dataset_to_pt(wavpath, sptpath)
+    #dataset_to_wav(m4apath, wavpath)
+    dataset_to_pt(m4apath, sptpath)
     gen_phases(sptpath, train_split=0.7, valid_split=0.15, test_split=0.15)
