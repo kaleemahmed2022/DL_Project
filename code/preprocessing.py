@@ -172,8 +172,11 @@ def dataset_to_wav(readpath, outpath, filenames=None):
                 files = os.listdir(rawpath)
                 if '.DS_Store' in files: files.remove('.DS_Store')
                 for f in files:
-                    m4a_to_wav(os.path.join(rawpath, f),
-                               os.path.join(procpath, f[:-3] + 'wav'))
+                    try:
+                        m4a_to_wav(os.path.join(rawpath, f),
+                                   os.path.join(procpath, f[:-3] + 'wav'))
+                    except:
+                        pass
     return
 
 

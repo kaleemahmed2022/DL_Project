@@ -1,7 +1,7 @@
 import preprocessing
 import pandas as pd
 
-i = 0
+i = 4
 
 files = pd.read_csv('Index_{}.csv'.format(i))['0'].to_list()
 
