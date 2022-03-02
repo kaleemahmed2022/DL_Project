@@ -7,6 +7,7 @@ import librosa
 import librosa.display
 import wave
 import torch
+import time
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -46,7 +47,6 @@ def m4a_to_wav(input_path, output_path):
     Returns: None
 
     '''
-
     track = AudioSegment.from_file(input_path, format='m4a')  # read the m4a file
     file_handle = track.export(output_path, format='wav')  # export the wav
     return
@@ -99,6 +99,7 @@ def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
     ids = os.listdir(DATAPATH)
     if '.DS_Store' in ids: ids.remove('.DS_Store')
     if 'phase_map.csv' in ids: ids.remove('phase_map.csv')
+
     for id in tqdm(ids):  # run a proc bar just to keep track
 
         contexts = os.listdir(os.path.join(DATAPATH, id))
@@ -172,15 +173,20 @@ def dataset_to_wav(readpath, outpath):
     return
 
 
-def dataset_to_pt(readpath, outpath):
+def dataset_to_pt(readpath, outpath, filenames = None):
     '''
 
     Scans through all subdirectories of ./dataset/processed/, and recreates them in ./dataset/spectrogram/ (writing new
     directories if needed), and converting the wav files into pt files with spectrograms
 
+    added in filenames to isolate the filenames we want to perform spectrograms on
     '''
 
-    ids = os.listdir(readpath)
+    if filenames is None:
+        ids = os.listdir(readpath)
+    else:
+        ids = filenames
+
     if '.DS_Store' in ids: ids.remove('.DS_Store')
     for id in tqdm(ids):  # run a proc bar just to keep track
 
@@ -202,10 +208,10 @@ def dataset_to_pt(readpath, outpath):
 
 if __name__ == '__main__':
 
-    m4apath = '/Users/jameswilkinson/Downloads/minidata/raw/'
+    m4apath = './dataset/raw/'
     wavpath = '/Users/jameswilkinson/Downloads/minidata/wav/'
     sptpath = '/Users/jameswilkinson/Downloads/minidata/spectrograms/'
 
     #dataset_to_wav(m4apath, wavpath)
-    dataset_to_pt(m4apath, sptpath)
-    gen_phases(sptpath, train_split=0.7, valid_split=0.15, test_split=0.15)
+    #dataset_to_pt(m4apath, sptpath)
+    gen_phases(m4apath, train_split=0.7, valid_split=0.15, test_split=0.15)

@@ -3,7 +3,9 @@ Logs
 */__pycache__
 .gitignore
 /dataset/
-
+*/.ipynb_checkpoints/
+*/.tmp.drivedownload
+*/.tmp.driveupload
 
 
 

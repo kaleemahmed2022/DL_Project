@@ -51,13 +51,13 @@ class VGGnet(SoftmaxNet):
             self.seq6.append(nn.BatchNorm2d(num_features=4096))
             self.seq7.append(nn.BatchNorm1d(num_features=1024))
 
-            self.seq1.append(nn.dropout(dropout))
-            self.seq2.append(nn.dropout(dropout))
-            self.seq3.append(nn.dropout(dropout))
-            self.seq4.append(nn.dropout(dropout))
-            self.seq5.append(nn.dropout(dropout))
-            self.seq6.append(nn.dropout(dropout))
-            self.seq7.append(nn.dropout(dropout))
+            self.seq1.append(nn.Dropout(dropout))
+            self.seq2.append(nn.Dropout(dropout))
+            self.seq3.append(nn.Dropout(dropout))
+            self.seq4.append(nn.Dropout(dropout))
+            self.seq5.append(nn.Dropout(dropout))
+            self.seq6.append(nn.Dropout(dropout))
+            self.seq7.append(nn.Dropout(dropout))
 
 
         self.seq1 = nn.Sequential(*self.seq1)
@@ -85,16 +85,15 @@ class VGGnet(SoftmaxNet):
 
 
 if __name__ == '__main__':
-    train = VoxDataset('./dataset/spectrograms/', 'train')
-    valid = VoxDataset('./dataset/spectrograms/', 'validation')
-    test = VoxDataset('./dataset/spectrograms/', 'test')
+    #train = VoxDataset('./dataset/processed/', 'train')
+    #valid = VoxDataset('./dataset/processed/', 'validation')
+    #test = VoxDataset('./dataset/processed/', 'test')
 
-    datasets = [train, valid, test]
+    #datasets = [train, valid, test]
 
     # Load dataloader
-    dataloader = VoxDataloader(train, valid, test, batch_size=3)
+    dataloader = VoxDataloader('./dataset/raw/', batch_size=3)
 
-    print(len(train), len(valid))
     # Create model
     model = VGGnet(num_classes=4, lr=1e-3)
 

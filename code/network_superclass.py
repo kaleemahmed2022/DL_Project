@@ -16,7 +16,7 @@ class SoftmaxNet(pl.LightningModule):
         self.loss = nn.CrossEntropyLoss()
         self.lr = lr
         self.L2 = L2
-        self.optimizer = optimizer
+        self.optimizer = optimizer.lower()
 
     def configure_optimizers(self):
         if self.optimizer=='sgd':
