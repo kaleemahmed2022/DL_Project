@@ -130,7 +130,7 @@ def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
     if 'phase_map.csv' in ids: ids.remove('phase_map.csv')
 
     for id in tqdm(ids):  # run a proc bar just to keep track
-        if "icon" not in id.lower():
+        if "icon" not in id.lower() and "id" in id.lower():
             contexts = os.listdir(os.path.join(DATAPATH, id))
             phases = list(np.random.choice([1, 2, 3], p=splits, size=len(contexts)))
             id_int = int(id.replace('id', '')) - 1
