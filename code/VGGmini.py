@@ -5,7 +5,7 @@ from dataloader import VoxDataset, VoxDataloader
 from network_superclass import SoftmaxNet
 
 
-class VGGnet(SoftmaxNet):
+class VGGmini(SoftmaxNet):
 
     def __init__(self, num_classes=4, lr=1e-3, batch_norm=True, dropout=0.5, L2=0.):
         '''
@@ -13,7 +13,7 @@ class VGGnet(SoftmaxNet):
         '''
 
         SoftmaxNet.__init__(self, lr=lr, L2=L2)
-        super(VGGnet, self).__init__()
+        super(VGGmini, self).__init__()
 
         self.activation = nn.ReLU()
         self.batch_norm = batch_norm
