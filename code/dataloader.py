@@ -80,7 +80,8 @@ class VoxDatasetFly(VoxDataset):
         x, sr = librosa.load(full_path, sr=sr, mono=True, duration=3)
         spec = librosa.stft(x, hop_length=Ns, win_length=Nw, n_fft=1024)  # FFT in complex numbers
         spec_abs = np.abs(spec)
-        spec_norm = (spec_abs - spec_abs.mean()) / spec_abs.std()
+        spec_log = np.log(spec_abs)
+        spec_norm = (spec_log - spec_log.mean()) / spec_log.std()
         spec_tens = torch.tensor(spec_norm).unsqueeze(0) # tensorize into the correct dimension
         return label, spec_tens.transpose(dim0=1, dim1=2)
 
