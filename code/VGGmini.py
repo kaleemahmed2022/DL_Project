@@ -7,12 +7,12 @@ from network_superclass import SoftmaxNet
 
 class VGGmini(SoftmaxNet):
 
-    def __init__(self, num_classes=4, lr=1e-3, batch_norm=True, dropout=0.5, L2=0., optimizer='sgd'):
+    def __init__(self, num_classes=4, lr=1e-3, batch_norm=True, dropout=0.5, L2=0., optimizer='sgd', momentum=0.):
         '''
         aprox 4x smaller than the full blown VGGnet and only 3 conv layers
         '''
 
-        SoftmaxNet.__init__(self, lr=lr, L2=L2, optimizer=optimizer)
+        SoftmaxNet.__init__(self, lr=lr, L2=L2, optimizer=optimizer, momentum=momentum)
         super(VGGmini, self).__init__()
 
         self.activation = nn.ReLU()
