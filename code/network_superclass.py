@@ -24,6 +24,8 @@ class SoftmaxNet(pl.LightningModule):
             return optim.SGD(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
         if self.optimizer=='adam':
             return optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
+        if self.optimizer=='ada':
+            return optim.Adagrad(self.parameters(), lr = self.lr, weight_decay=self.L2, momentum=self.momentum)
         else:
             raise NameError("self.optimizer not configured. Invalid Value: {}".format(self.optimizer))
 

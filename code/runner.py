@@ -16,8 +16,8 @@ def run(config, datapath, Dataloader, Model, logpath,
 
     '''
 
-    logname = "opt{}_lr{}_reg{}_drop{}_bn{}_gc{}".format(
-        *[config[s] for s in ['optimizer', 'lr', 'L2', 'dropout', 'batch_norm', 'gradient_clipping']])
+    logname = "opt{}_lr{}_reg{}_drop{}_bn{}_gc{}_mom{}".format(
+        *[config[s] for s in ['optimizer', 'lr', 'L2', 'dropout', 'batch_norm', 'gradient_clipping', 'momentum']])
     print("LOGNAME: {}".format(logname))
     dataloader = Dataloader(datapath, batch_size=config['batch_size'])
     model = Model(num_classes=dataloader.num_classes(), lr=config['lr'], batch_norm=config['batch_norm'],

@@ -7,7 +7,7 @@ from network_superclass import SoftmaxNet
 
 class VGGmini(SoftmaxNet):
 
-    def __init__(self, num_classes=4, lr=1e-3, batch_norm=True, dropout=0.5, L2=0., optimizer='sgd', momentum=0.):
+    def __init__(self, num_classes=20, lr=1e-3, batch_norm=True, dropout=0.5, L2=0., optimizer='sgd', momentum=0.):
         '''
         aprox 4x smaller than the full blown VGGnet and only 3 conv layers
         '''
@@ -19,6 +19,8 @@ class VGGmini(SoftmaxNet):
         self.batch_norm = batch_norm
         self.dropout = dropout
         self.L2 = L2
+        self.optimizer = optimizer
+        self.momentum = momentum 
 
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=96, kernel_size=7, stride=2, padding=1)
         self.mpool1 = nn.MaxPool2d(kernel_size=3, stride=2)
