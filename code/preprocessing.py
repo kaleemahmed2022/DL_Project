@@ -9,6 +9,7 @@ import wave
 import torch
 import time
 import warnings
+import matplotlib.pyplot as plt
 warnings.filterwarnings('ignore')
 
 
@@ -51,6 +52,38 @@ def m4a_to_wav(input_path, output_path):
     file_handle = track.export(output_path, format='wav')  # export the wav
     return
 
+def m4a_to_specs(input_path, output_path,
+                       sr = 16e3,
+                       Ts = 10,
+                       Tw = 25):
+    '''
+
+    Args:
+        input_path: path to the wav file
+        output_path: normalized spectrogram as a tensor
+        sr = sample rate of wav requiried
+        Ts = time step (ms) of sliding fft window
+        Tw = window size of fft window (ms)
+
+    Returns: None
+
+    '''
+
+    Ns = int(float(Ts)/1000 * sr) # need to specify the size of the fft windows
+    Nw = int(float(Tw)/1000 * sr)
+
+    x, sr = librosa.load(input_path, sr=sr, mono=True, duration=3)
+    X = librosa.stft(x, hop_length=Ns, win_length=Nw, n_fft=1024) # FFT in complex numbers
+    Xdb = np.abs(X) # abs value to take amplitude data of complex matrix
+    img = librosa.display.specshow(Xdb, y_axis='linear', x_axis='time',sr=sr)
+    # plt.savefig(output_path)
+    Xlog = np.log(Xdb)
+    log_img = librosa.display.specshow(Xlog, y_axis='linear', x_axis='time',sr=sr)
+    plt.savefig(output_path)
+    data = (Xlog - Xlog.mean()) / Xlog.std()
+    # NB: unsqueeze needed to replicate dimension of number of channel (just 1 in our case):
+    torch.save(torch.tensor(data).unsqueeze(0), output_path) # the prior transform was messing with the datashape
+    return
 
 def wav_to_spectrogram(input_path, output_path,
                        sr = 16e3,
@@ -75,8 +108,13 @@ def wav_to_spectrogram(input_path, output_path,
     x, sr = librosa.load(input_path, sr=sr, mono=True, duration=3)
     X = librosa.stft(x, hop_length=Ns, win_length=Nw, n_fft=1024) # FFT in complex numbers
     Xdb = np.abs(X) # abs value to take amplitude data of complex matrix
-    data = (Xdb - Xdb.mean()) / X.std()
+    # img = librosa.display.specshow(Xdb, y_axis='linear', x_axis='time',sr=sr)
+    Xlog = np.log(Xdb)
+    # log_img = librosa.display.specshow(Xlog, y_axis='linear', x_axis='time',sr=sr)
+    data = (Xlog - Xlog.mean()) / Xlog.std()
     # NB: unsqueeze needed to replicate dimension of number of channel (just 1 in our case):
+    # torch.save(img, output_path+'png')
+    # torch.save(log_img, output_path+'png')
     torch.save(torch.tensor(data).unsqueeze(0), output_path) # the prior transform was messing with the datashape
     return
 
@@ -243,6 +281,39 @@ def dataset_to_pt(readpath, outpath, filenames = None):
 
     return
 
+def dataset_to_png(readpath, outpath, filenames = None):
+    '''
+
+    Scans through all subdirectories of ./dataset/processed/, and recreates them in ./dataset/spectrogram/ (writing new
+    directories if needed), and converting the wav files into pt files with spectrograms
+
+    added in filenames to isolate the filenames we want to perform spectrograms on
+    '''
+
+    if filenames is None:
+        ids = os.listdir(readpath)
+    else:
+        ids = filenames
+
+    if '.DS_Store' in ids: ids.remove('.DS_Store')
+    for id in tqdm(ids):  # run a proc bar just to keep track
+
+        contexts = os.listdir(os.path.join(readpath, id))
+        if '.DS_Store' in contexts: contexts.remove('.DS_Store')
+        for ctx in contexts:
+
+            rawpath = os.path.join(readpath, id, ctx)
+            procpath = os.path.join(outpath, id, ctx)
+            mkdir_if_not_exists(procpath)
+
+            files = os.listdir(rawpath)
+            if '.DS_Store' in files: files.remove('.DS_Store')
+            for f in files:
+                m4a_to_specs(os.path.join(rawpath, f),
+                                   os.path.join(procpath, f[:-3] + 'png'))
+
+    return
+
 def noise_datasets(readpath, filenames = None):
     '''
 
@@ -277,15 +348,18 @@ def noise_datasets(readpath, filenames = None):
     return
 
 if __name__ == '__main__':
-#     print(os.getcwd())
+    print(os.getcwd())
 #     print(os.path.dirname(os.path.realpath('/Users/devyanigauri/Documents/GitHub/DL_Project/dataset'
 # )))
     #m4apath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/raw'
     #wavpath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/wav'
     #sptpath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/spectrograms'
-    m4apath = '/Users/jameswilkinson/Downloads/dev/aac/'
-
+    m4apath = os.path.normpath(os.getcwd()+os.sep+os.pardir+os.sep+os.pardir)+'/minidata/raw'
+    sptpath = os.path.normpath(os.getcwd()+os.sep+os.pardir+os.sep+os.pardir)+'/minidata/spectrograms'
+    # m4apath = '../dataset/raw'
+    # sptpath = '../dataset/spectrograms'
     # dataset_to_wav(m4apath, wavpath)
-    # dataset_to_pt(m4apath, sptpath)
+    # dataset_to_png(m4apath, sptpath)
+    dataset_to_pt(m4apath, sptpath)
     # noise_datasets(m4apath)
     gen_phases(m4apath, train_split=0.7, valid_split=0.15, test_split=0.15)
