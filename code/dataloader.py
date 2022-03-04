@@ -12,7 +12,7 @@ warnings.filterwarnings('ignore') # surpress warnings
 
 class VoxDataset(Dataset):
 
-    def __init__(self, rootpath, phase='train'):
+    def __init__(self, rootpath, phase='train', phase_map_file='phase_map.csv'):
         super(Dataset, self).__init__()
         '''
 
@@ -23,7 +23,7 @@ class VoxDataset(Dataset):
         self.rootpath = rootpath
         self.phase = phase
 
-        map_data = pd.read_csv(os.path.join(rootpath, 'phase_map.csv'))[['phase', 'path', 'id', 'context']]
+        map_data = pd.read_csv(os.path.join(rootpath, phase_map_file))[['phase', 'path', 'id', 'context']]
 
         phase_int = {'train': 1, 'validation': 2, 'test': 3}[phase]  # map phase onto the representative int
 
@@ -59,8 +59,8 @@ class VoxDataset(Dataset):
 
 class VoxDatasetFly(VoxDataset):
 
-    def __init__(self, rootpath, phase='train'):
-        super(VoxDatasetFly, self).__init__(rootpath, phase=phase)
+    def __init__(self, rootpath, phase='train', phase_map_file='phase_map.csv'):
+        super(VoxDatasetFly, self).__init__(rootpath, phase=phase, phase_map_file=phase_map_file)
 
     def __getitem__(self, idx):
 
@@ -89,14 +89,14 @@ class VoxDatasetFly(VoxDataset):
 
 class VoxDataloader(pl.LightningDataModule):
 
- def __init__(self, path, num_workers=2, batch_size=32):
+ def __init__(self, path, num_workers=2, batch_size=32, phase_map_file='phase_map.csv'):
      super(VoxDataloader, self).__init__()
      self.num_workers = num_workers
      self.batch_size = batch_size
 
-     self.train = VoxDatasetFly(path, phase='train')
-     self.val = VoxDatasetFly(path, phase='validation')
-     self.test = VoxDatasetFly(path, phase='test')
+     self.train = VoxDatasetFly(path, phase='train', phase_map_file=phase_map_file)
+     self.val = VoxDatasetFly(path, phase='validation', phase_map_file=phase_map_file)
+     self.test = VoxDatasetFly(path, phase='test', phase_map_file=phase_map_file)
 
  def train_dataloader(self):
      return DataLoader(self.train, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)

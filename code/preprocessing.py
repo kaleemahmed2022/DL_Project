@@ -190,6 +190,51 @@ def gen_phases(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
     return
 
 
+def gen_phases_v2(DATAPATH, train_split=0.7, valid_split=0.15, test_split=0.15):
+    '''
+
+    generates iden_split.txt at DATAPATH/iden_split.txt.
+
+    New version where each context file contains at least one training sample, and if possible, one valid and one test.
+    This is cheating.
+
+    calculates phases based on provided splits using a random generator.
+    A single id and context directory will always be in the same phase!!!! (prevents dataleakage)
+    Every id will have a combination of all 3 phases
+    '''
+
+    # normalise splits
+    splits = [train_split, valid_split, test_split]
+    assert sum(splits) == 1.
+
+    iden_split = pd.DataFrame(columns=['phase', 'path', 'id', 'context'])
+    ids = os.listdir(DATAPATH)
+    if '.DS_Store' in ids: ids.remove('.DS_Store')
+    if 'phase_map.csv' in ids: ids.remove('phase_map.csv')
+
+    for id in tqdm(ids):  # run a proc bar just to keep track
+        if "icon" not in id.lower() and "id" in id.lower():
+            contexts = os.listdir(os.path.join(DATAPATH, id))
+            id_int = int(id.replace('id', '')) - 1
+
+            if '.DS_Store' in contexts: contexts.remove('.DS_Store')
+            for ctx in contexts:
+                if 'icon' not in ctx.lower():
+
+                    rawpath = os.path.join(DATAPATH, id, ctx)
+
+                    files = os.listdir(rawpath)
+                    phases = [1,2,3] + list(np.random.choice([1,2,3], p=splits, size=max(1,len(files)-3))) # manufacture this. make min size of append 1 to stop bugs. won't matter
+                    if '.DS_Store' in files: files.remove('.DS_Store')
+                    for f in files:
+                        if "icon" not in f.lower():
+                            filepath = os.path.join(id, ctx, f)
+                            iden_split.loc[len(iden_split)] = [phases.pop(0), filepath, id_int, ctx]
+        iden_split.to_csv(os.path.join(DATAPATH, 'phase_map.csv'))
+    return
+
+
+
 def check_sample_rates():
     '''
 
