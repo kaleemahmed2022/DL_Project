@@ -7,12 +7,12 @@ from network_superclass import SoftmaxNet
 
 class VGGmini(SoftmaxNet):
 
-    def __init__(self, num_classes=4, lr=1e-3, batch_norm=True, dropout=0.5, L2=0.):
+    def __init__(self, num_classes=4, lr=1e-3, batch_norm=True, dropout=0.5, L2=0., optimizer='sgd'):
         '''
         aprox 4x smaller than the full blown VGGnet and only 3 conv layers
         '''
 
-        SoftmaxNet.__init__(self, lr=lr, L2=L2)
+        SoftmaxNet.__init__(self, lr=lr, L2=L2, optimizer=optimizer)
         super(VGGmini, self).__init__()
 
         self.activation = nn.ReLU()
@@ -65,17 +65,12 @@ class VGGmini(SoftmaxNet):
 
 
 if __name__ == '__main__':
-    #train = VoxDataset('./dataset/processed/', 'train')
-    #valid = VoxDataset('./dataset/processed/', 'validation')
-    #test = VoxDataset('./dataset/processed/', 'test')
-
-    #datasets = [train, valid, test]
-
     # Load dataloader
-    dataloader = VoxDataloader('../dataset/raw/', batch_size=3)
+    #dataloader = VoxDataloader('../dataset/raw/', batch_size=3)
+    dataloader = VoxDataloader('/Users/jameswilkinson/Downloads/dev/wav3/', batch_size=32)
 
     # Create model
-    model = VGGnet(num_classes=4, lr=1e-3)
+    model = VGGmini(num_classes=4, lr=1e-3)
 
     # give training a go
     tb_logger = pl_loggers.TensorBoardLogger('../Logs/', name="TestRun")

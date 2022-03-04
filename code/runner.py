@@ -20,7 +20,8 @@ def run(config, datapath, Dataloader, Model, logpath,
         *[config[s] for s in ['optimizer', 'lr', 'L2', 'dropout', 'batch_norm', 'gradient_clipping']])
     print("LOGNAME: {}".format(logname))
     dataloader = Dataloader(datapath, batch_size=config['batch_size'])
-    model = Model(num_classes=dataloader.num_classes(), lr=config['lr'], batch_norm=config['batch_norm'])
+    model = Model(num_classes=dataloader.num_classes(), lr=config['lr'], batch_norm=config['batch_norm'],
+                  optimizer=config['optimizer'], momentum=config['momentum'])
     tb_logger = pl_loggers.TensorBoardLogger(logpath, name=logname)
     trainer = pl.Trainer(logger=tb_logger, max_epochs=config['max_epochs'], tpu_cores=tpu_cores, gpus=gpu_cores,
                          log_every_n_steps=20,

@@ -11,18 +11,19 @@ class SoftmaxNet(pl.LightningModule):
     neural networks that use a softmax output
     '''
 
-    def __init__(self, lr=1e-3, L2=0., optimizer='SGD'):
+    def __init__(self, lr=1e-3, L2=0., optimizer='SGD', momentum=0):
         super(SoftmaxNet, self).__init__()
         self.loss = nn.CrossEntropyLoss()
         self.lr = lr
         self.L2 = L2
         self.optimizer = optimizer.lower()
+        self.momentum = momentum
 
     def configure_optimizers(self):
         if self.optimizer=='sgd':
-            return optim.SGD(self.parameters(), lr=self.lr, weight_decay=self.L2)
+            return optim.SGD(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
         if self.optimizer=='adam':
-            return optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.L2)
+            return optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
         else:
             raise NameError("self.optimizer not configured. Invalid Value: {}".format(self.optimizer))
 
