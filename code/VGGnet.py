@@ -8,13 +8,11 @@ from network_superclass import SoftmaxNet
 class VGGnet(SoftmaxNet):
 
     def __init__(self, num_classes=4, lr=1e-3, batch_norm=True, dropout=0.5, L2=0., momentum=0, optimizer='SGD'):
-        SoftmaxNet.__init__(self, lr=lr, L2=L2, momentum=momentum, optimizer=optimizer)
-        super(VGGnet, self).__init__()
+        super(VGGnet, self).__init__(lr=lr, L2=L2, optimizer=optimizer, momentum=momentum)
 
         self.activation = nn.ReLU()
         self.batch_norm = batch_norm
         self.dropout = dropout
-        self.L2 = L2
 
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=96, kernel_size=7, stride=2, padding=1)
         self.mpool1 = nn.MaxPool2d(kernel_size=3, stride=2)

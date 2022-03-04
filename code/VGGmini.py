@@ -12,15 +12,11 @@ class VGGmini(SoftmaxNet):
         aprox 4x smaller than the full blown VGGnet and only 3 conv layers
         '''
 
-        SoftmaxNet.__init__(self, lr=lr, L2=L2, optimizer=optimizer, momentum=momentum)
-        super(VGGmini, self).__init__()
+        super(VGGmini, self).__init__(lr=lr, L2=L2, optimizer=optimizer, momentum=momentum)
 
         self.activation = nn.ReLU()
         self.batch_norm = batch_norm
         self.dropout = dropout
-        self.L2 = L2
-        self.optimizer = optimizer
-        self.momentum = momentum 
 
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=96, kernel_size=7, stride=2, padding=1)
         self.mpool1 = nn.MaxPool2d(kernel_size=3, stride=2)
@@ -72,7 +68,7 @@ if __name__ == '__main__':
     dataloader = VoxDataloader('/Users/jameswilkinson/Downloads/dev/wav3/', batch_size=32)
 
     # Create model
-    model = VGGmini(num_classes=4, lr=1e-3)
+    model = VGGmini(num_classes=4, lr=1e-3, optimizer='SGD')
 
     # give training a go
     tb_logger = pl_loggers.TensorBoardLogger('../Logs/', name="TestRun")
