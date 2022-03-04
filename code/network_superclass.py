@@ -5,7 +5,6 @@ import numpy as np
 
 
 class SoftmaxNet(pl.LightningModule):
-
     __doc__ = '''
     Lighning module to harbour the basic functionality for all
     neural networks that use a softmax output
@@ -20,12 +19,12 @@ class SoftmaxNet(pl.LightningModule):
         self.momentum = momentum
 
     def configure_optimizers(self):
-        if self.optimizer=='sgd':
+        if self.optimizer == 'sgd':
             return optim.SGD(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
-        elif self.optimizer=='adam':
+        elif self.optimizer == 'adam':
             return optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
-        elif self.optimizer=='ada':
-            return optim.Adagrad(self.parameters(), lr = self.lr, weight_decay=self.L2, momentum=self.momentum)
+        elif self.optimizer == 'ada':
+            return optim.Adagrad(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
         else:
             raise NameError("self.optimizer not configured. Invalid Value: {}".format(self.optimizer))
 
