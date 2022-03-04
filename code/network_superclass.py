@@ -22,7 +22,7 @@ class SoftmaxNet(pl.LightningModule):
         if self.optimizer == 'sgd':
             return optim.SGD(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
         elif self.optimizer == 'adam':
-            return optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
+            return optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.L2)
         elif self.optimizer == 'ada':
             return optim.Adagrad(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
         else:
