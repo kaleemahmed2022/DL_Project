@@ -10,21 +10,26 @@ class SoftmaxNet(pl.LightningModule):
     neural networks that use a softmax output
     '''
 
-    def __init__(self, lr=1e-3, L2=0., optimizer='SGD', momentum=0):
+    def __init__(self, lr=1e-3, L2=0., momentum=0., lr_decay=0.8, optimizer='SGD'):
         super(SoftmaxNet, self).__init__()
         self.loss = nn.CrossEntropyLoss()
         self.lr = lr
         self.L2 = L2
-        self.optimizer = optimizer.lower()
         self.momentum = momentum
+        self.lr_decay = lr_decay
+        self.optimizer = optimizer.lower()
+        
+        
 
     def configure_optimizers(self):
         if self.optimizer == 'sgd':
             return optim.SGD(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
         elif self.optimizer == 'adam':
             return optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.L2)
-        elif self.optimizer == 'ada':
-            return optim.Adagrad(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
+        elif self.optimizer == 'adagrad':
+            return optim.Adagrad(self.parameters(), lr=self.lr, weight_decay=self.L2, lr_decay = self.lr_decay)
+        elif self.optimizer == 'rmsprop':
+            return optim.RMSprop(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
         else:
             raise NameError("self.optimizer not configured. Invalid Value: {}".format(self.optimizer))
 
@@ -43,7 +48,7 @@ class SoftmaxNet(pl.LightningModule):
         logits = logits.squeeze(1)
         loss = self.loss(logits, label)
         tensorboard_logs = {'loss': {phase: loss.detach()}}
-        self.log("{}_loss".format(phase), loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log("{}_loss".format(phase), loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return {"loss": loss, "log": tensorboard_logs}
 
     def training_step(self, batch, batch_idx):
