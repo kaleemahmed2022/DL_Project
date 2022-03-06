@@ -12,20 +12,20 @@ class VGGmini(SoftmaxNet):
         aprox 4x smaller than the full blown VGGnet and only 3 conv layers
         '''
         super(VGGmini, self).__init__(lr=lr, L2=L2, momentum=momentum, lr_decay = lr_decay, optimizer=optimizer)
-        
+
         self.activation = nn.ReLU()
         self.batch_norm = batch_norm
         self.dropout = dropout
 
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=4, kernel_size=3, stride=1, padding=1)
         self.conv2 = nn.Conv2d(in_channels=4, out_channels=4, kernel_size=3, stride=1, padding=1)
-        
+
         # nn.init.xavier_uniform(self.conv1.weight)
         self.mpool1 = nn.MaxPool2d(kernel_size=5, stride=1)
 
         self.conv3 = nn.Conv2d(in_channels=4, out_channels=4, kernel_size=3)
         self.mpool2 = nn.MaxPool2d(kernel_size=3, stride=2)
-        
+
 
         #self.fc3 = nn.Conv2d(in_channels=64, out_channels=1024, kernel_size=(1, 9))
         self.fc3 = nn.Linear(in_features=148764, out_features=512)
@@ -33,7 +33,7 @@ class VGGmini(SoftmaxNet):
         # self.transpose = torch.transpose(dim0=1, dim1=3)
         self.fc4 = nn.Linear(in_features=512, out_features=512)
         self.fc5 = nn.Linear(in_features=512, out_features=num_classes)
-        
+
 
         # self.seq1 = [] # initialise some sequentials for regularisation
         # self.seq2 = []
@@ -62,7 +62,7 @@ class VGGmini(SoftmaxNet):
     #     x = self.fc4(x)
     #     x = x.view(x.size(0), -1)
     #     x = self.fc5(x)
-        
+
     #     return x
     def forward(self,x):
         x = self.activation(self.conv1(x))
@@ -80,10 +80,12 @@ class VGGmini(SoftmaxNet):
 if __name__ == '__main__':
     # Load dataloader
     #dataloader = VoxDataloader('../dataset/raw/', batch_size=3)
-    dataloader = VoxDataloader('/Users/jameswilkinson/Downloads/dev/wav3/', batch_size=32)
+    dataloader = VoxDataloader('/Users/jameswilkinson/Downloads/dev/wav3/', batch_size=32, phase_map_file='phase_map_small.csv',
+                               fftmethod='signal.stft')
+    print("Num classes: {}".format(dataloader.num_classes()))
 
     # Create model
-    model = VGGmini(num_classes=4, lr=1e-3, optimizer='SGD')
+    model = VGGmini(num_classes=dataloader.num_classes(), lr=1e-3, optimizer='SGD')
 
     # give training a go
     tb_logger = pl_loggers.TensorBoardLogger('../Logs/', name="TestRun")

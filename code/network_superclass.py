@@ -2,6 +2,7 @@ import torch.nn as nn
 import pytorch_lightning as pl
 import torch.optim as optim
 import numpy as np
+import torch
 
 
 class SoftmaxNet(pl.LightningModule):
@@ -18,8 +19,8 @@ class SoftmaxNet(pl.LightningModule):
         self.momentum = momentum
         self.lr_decay = lr_decay
         self.optimizer = optimizer.lower()
-        
-        
+
+
 
     def configure_optimizers(self):
         if self.optimizer == 'sgd':
