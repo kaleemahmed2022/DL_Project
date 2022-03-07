@@ -153,8 +153,9 @@ class VoxDatasetFly(VoxDataset):
 
         x, sr = librosa.load(full_path, sr=sr, mono=True, duration=3)
         spec = librosa.stft(x, hop_length=Ns, win_length=Nw, n_fft=1024)  # FFT in complex numbers
-        #spec_abs = np.abs(spec)
-        spec_abs = librosa.amplitude_to_db(spec)
+        #spec_abs = librosa.amplitude_to_db(spec)
+        spec_abs = np.log(np.abs(spec))
+
         #spec_log = np.log(spec_abs)
         spec_norm = (spec_abs - spec_abs.mean()) / spec_abs.std()
         spec_tens = torch.tensor(spec_norm).unsqueeze(0) # tensorize into the correct dimension
@@ -181,10 +182,8 @@ class VoxDatasetFly(VoxDataset):
 
         x, sr = librosa.load(full_path, sr=sr, mono=True, duration=3)
         spec = librosa.feature.mfcc(x, hop_length=Ns, win_length=Nw, n_mfcc=1024)  # FFT in complex numbers
-        # spec_abs = np.abs(spec)
-        spec_abs = librosa.amplitude_to_db(spec)
-        #spec_abs = spec # ???
-        # spec_log = np.log(spec_abs)
+        #spec_abs = librosa.amplitude_to_db(spec)
+        spec_abs = np.log(np.abs(spec))
         spec_norm = (spec_abs - spec_abs.mean()) / spec_abs.std()
         spec_resize = cv2.resize(spec_norm, dsize=(301, 513), interpolation=cv2.INTER_CUBIC)
 
@@ -212,10 +211,9 @@ class VoxDatasetFly(VoxDataset):
 
         x, sr = librosa.load(full_path, sr=sr, mono=True, duration=3)
         spec = librosa.feature.melspectrogram(x, hop_length=Ns, win_length=Nw, n_fft=1024)  # FFT in complex numbers
-        # spec_abs = np.abs(spec)
-        spec_abs = librosa.amplitude_to_db(spec)
+        spec_abs = np.log(np.abs(spec))
+        #spec_abs = librosa.amplitude_to_db(spec)
         #spec_abs = spec # ???
-        # spec_log = np.log(spec_abs)
         spec_norm = (spec_abs - spec_abs.mean()) / spec_abs.std()
         spec_resize = cv2.resize(spec_norm, dsize=(301, 513), interpolation=cv2.INTER_CUBIC)
 

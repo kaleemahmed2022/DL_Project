@@ -20,8 +20,6 @@ class SoftmaxNet(pl.LightningModule):
         self.lr_decay = lr_decay
         self.optimizer = optimizer.lower()
 
-
-
     def configure_optimizers(self):
         if self.optimizer == 'sgd':
             return optim.SGD(self.parameters(), lr=self.lr, weight_decay=self.L2, momentum=self.momentum)
