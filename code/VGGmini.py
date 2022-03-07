@@ -17,18 +17,13 @@ class VGGmini(SoftmaxNet):
         self.batch_norm = batch_norm
         self.dropout = dropout
 
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=4, kernel_size=3, stride=1, padding=1)
-        self.conv2 = nn.Conv2d(in_channels=4, out_channels=4, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=96, kernel_size=7, stride=2, padding=1)
+        self.mpool1 = nn.MaxPool2d(kernel_size=3, stride=2)
 
-        # nn.init.xavier_uniform(self.conv1.weight)
-        self.mpool1 = nn.MaxPool2d(kernel_size=5, stride=1)
-
-        self.conv3 = nn.Conv2d(in_channels=4, out_channels=4, kernel_size=3)
-        self.mpool2 = nn.MaxPool2d(kernel_size=3, stride=2)
-
+        self.conv2 = nn.Conv2d(in_channels=96, out_channels=1024, kernel_size=5, stride=2, padding=1)
 
         #self.fc3 = nn.Conv2d(in_channels=64, out_channels=1024, kernel_size=(1, 9))
-        self.fc3 = nn.Linear(in_features=148764, out_features=512)
+        self.fc3 = nn.Linear(in_features=31, out_features=1)
 
         # self.transpose = torch.transpose(dim0=1, dim1=3)
         self.fc4 = nn.Linear(in_features=512, out_features=512)
