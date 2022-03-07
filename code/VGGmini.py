@@ -26,51 +26,39 @@ class VGGmini(SoftmaxNet):
         self.fc3 = nn.Linear(in_features=31, out_features=1)
 
         # self.transpose = torch.transpose(dim0=1, dim1=3)
-        self.fc4 = nn.Linear(in_features=512, out_features=512)
-        self.fc5 = nn.Linear(in_features=512, out_features=num_classes)
+        self.fc4 = nn.Linear(in_features=17, out_features=1)
+        self.fc5 = nn.Linear(in_features=1024, out_features=num_classes)
 
+        self.seq1 = [] # initialise some sequentials for regularisation
+        self.seq2 = []
+        self.seq3 = []
+        self.seq5 = []
 
-        # self.seq1 = [] # initialise some sequentials for regularisation
-        # self.seq2 = []
-        # self.seq3 = []
-        # self.seq5 = []
+        if self.batch_norm:
+            self.seq1.append(nn.BatchNorm2d(num_features=96))
+            self.seq2.append(nn.BatchNorm2d(num_features=1024))
+            self.seq3.append(nn.BatchNorm2d(num_features=1024))
 
-        # if self.batch_norm:
-        #     self.seq1.append(nn.BatchNorm2d(num_features=96))
-        #     self.seq2.append(nn.BatchNorm2d(num_features=1024))
-        #     self.seq3.append(nn.BatchNorm2d(num_features=1024))
+            self.seq1.append(nn.Dropout(dropout))
+            self.seq2.append(nn.Dropout(dropout))
+            self.seq3.append(nn.Dropout(dropout))
 
-        #     self.seq1.append(nn.Dropout(dropout))
-        #     self.seq2.append(nn.Dropout(dropout))
-        #     self.seq3.append(nn.Dropout(dropout))
+        self.seq1 = nn.Sequential(*self.seq1)
+        self.seq2 = nn.Sequential(*self.seq2)
+        self.seq3 = nn.Sequential(*self.seq3)
 
-        # self.seq1 = nn.Sequential(*self.seq1)
-        # self.seq2 = nn.Sequential(*self.seq2)
-        # self.seq3 = nn.Sequential(*self.seq3)
+    def forward(self, x):
+        x = self.mpool1(self.activation(self.seq1(self.conv1(x))))
+        x = self.mpool2(self.activation(self.seq2(self.conv2(x))))
+        #x = self.mpool3(self.activation(self.seq3(self.fc3(x))))
+        x = self.activation(self.seq3(self.fc3(x)))
+        x = x.squeeze(-1)
+        x = self.fc4(x)
 
-    # def forward(self, x):
-    #     x = self.activation(self.seq1(self.conv1(x)))
-    #     x = self.activation(self.seq2(self.conv2(x)))
-    #     #x = self.mpool3(self.activation(self.seq3(self.fc3(x))))
-    #     x = self.activation(self.seq3(self.fc3(x)))
-    #     x = x.squeeze(-1)
-    #     x = self.fc4(x)
-    #     x = x.view(x.size(0), -1)
-    #     x = self.fc5(x)
-
-    #     return x
-    def forward(self,x):
-        x = self.activation(self.conv1(x))
-        x = self.activation(self.conv2(x))
-        x = self.mpool1(x)
-        x = self.activation(self.conv3(x))
-        x = self.mpool2(x)
-        x = nn.Flatten()(x)
-        x = self.activation(self.fc3(x))
-        x = self.activation(self.fc4(x))
-        x = self.activation(self.fc5(x))
-
+        x = x.view(x.size(0), -1)
+        x = self.fc5(x)
         return x
+
 
 if __name__ == '__main__':
     # Load dataloader
