@@ -126,6 +126,8 @@ class VoxDatasetFly(VoxDataset):
             return self._librosaSTFT(idx)
         elif self._fftmethod == 'librosa.mfcc':
             return self._librosaMFCC(idx)
+        elif self._fftmethod == 'librosa.mel':
+            return self._librosaMEL(idx)
         elif self._fftmethod == 'signal.stft':
             return self._signalSTFT(idx)
         else:
@@ -179,6 +181,37 @@ class VoxDatasetFly(VoxDataset):
 
         x, sr = librosa.load(full_path, sr=sr, mono=True, duration=3)
         spec = librosa.feature.mfcc(x, hop_length=Ns, win_length=Nw, n_mfcc=1024)  # FFT in complex numbers
+        # spec_abs = np.abs(spec)
+        spec_abs = librosa.amplitude_to_db(spec)
+        #spec_abs = spec # ???
+        # spec_log = np.log(spec_abs)
+        spec_norm = (spec_abs - spec_abs.mean()) / spec_abs.std()
+        spec_resize = cv2.resize(spec_norm, dsize=(301, 513), interpolation=cv2.INTER_CUBIC)
+
+        spec_tens = torch.tensor(spec_resize).unsqueeze(0)  # tensorize into the correct dimension
+        return label, spec_tens.transpose(dim0=1, dim1=2)
+
+
+    def _librosaMEL(self, idx):
+        '''
+        __getitem__ specialisation for using librosa's melspectrogram
+        '''
+
+        sample_meta = self.dataset.iloc[idx]
+        sample_path = sample_meta['path']
+        label = sample_meta['id_int']
+
+        full_path = os.path.join(self.rootpath, sample_path)
+
+        sr = 16e3
+        Ts = 10
+        Tw = 25
+
+        Ns = int(float(Ts) / 1000 * sr)  # need to specify the size of the fft windows
+        Nw = int(float(Tw) / 1000 * sr)
+
+        x, sr = librosa.load(full_path, sr=sr, mono=True, duration=3)
+        spec = librosa.feature.melspectrogram(x, hop_length=Ns, win_length=Nw, n_fft=1024)  # FFT in complex numbers
         # spec_abs = np.abs(spec)
         spec_abs = librosa.amplitude_to_db(spec)
         #spec_abs = spec # ???
