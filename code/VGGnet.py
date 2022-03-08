@@ -90,7 +90,8 @@ if __name__ == '__main__':
     #datasets = [train, valid, test]
 
     # Load dataloader
-    dataloader = VoxDataloader('./dataset/raw/', batch_size=3)
+    dataloader = VoxDataloader('/Users/jameswilkinson/Downloads/dev/wav3/', batch_size=32, fftmethod='librosa.stft',
+                               phase_map_file='phase_map_small.csv')
 
     # Create model
     model = VGGnet(num_classes=4, lr=1e-3)

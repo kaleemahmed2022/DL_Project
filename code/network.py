@@ -1,9 +1,7 @@
-import torch
 import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-from torch.utils.data import Dataset
-from torchvision.transforms import Compose
+import pytorch_lightning as pl
+import pytorch_lightning.loggers as pl_loggers
+from dataloader import VoxDataloader
 
 
 class VggVox(nn.Module):
@@ -62,3 +60,16 @@ class VggVox(nn.Module):
         else:
             return self.softmax(x)
 
+if __name__ == '__main__':
+    # Load dataloader
+    #dataloader = VoxDataloader('../dataset/raw/', batch_size=3)
+    dataloader = VoxDataloader('/Users/jameswilkinson/Downloads/dev/wav3/', batch_size=32, fftmethod='librosa.stft',
+                               phase_map_file='phase_map_small.csv')
+
+    # Create model
+    model = VggVox(num_classes=4)
+
+    # give training a go
+    tb_logger = pl_loggers.TensorBoardLogger('../Logs/', name="TestRun")
+    trainer = pl.Trainer(logger=tb_logger, max_epochs=20, tpu_cores=None, gpus=None)
+    trainer.fit(model, dataloader)
