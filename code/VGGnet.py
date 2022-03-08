@@ -7,7 +7,7 @@ from network_superclass import SoftmaxNet
 
 class VGGnet(SoftmaxNet):
 
-    def __init__(self, num_classes=4, lr=1e-3, batch_norm=True, dropout=0.5, L2=0., momentum=0, optimizer='SGD'):
+    def __init__(self, num_classes=4, lr=1e-3, batch_norm=True, dropout=0.5, L2=0., momentum=0, optimizer='SGD', **kwargs,):
         super(VGGnet, self).__init__(lr=lr, L2=L2, optimizer=optimizer, momentum=momentum)
 
         self.activation = nn.ReLU()

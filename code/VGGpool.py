@@ -8,7 +8,7 @@ from network_superclass import SoftmaxNet
 class VGGpool(SoftmaxNet):
 
     def __init__(self, num_classes=20, lr=1e-3, batch_norm=True, dropout=0.5, L2=0., optimizer='sgd', momentum=0.,
-                 lr_decay=0., poolmethod='average'):
+                 lr_decay=0., poolmethod='average', **kwargs):
         '''
         aprox 4x smaller than the full blown VGGnet and only 3 conv layers.
 
@@ -79,10 +79,10 @@ if __name__ == '__main__':
     # Load dataloader
     #dataloader = VoxDataloader('../dataset/raw/', batch_size=3)
     dataloader = VoxDataloader('/Users/jameswilkinson/Downloads/dev/wav3/', batch_size=32, fftmethod='librosa.stft',
-                               phase_map_file='phase_map_small.csv')
+                               phase_map_file='phase_map_med.csv')
 
     # Create model
-    model = VGGpool(num_classes=4, lr=1e-3, optimizer='SGD')
+    model = VGGpool(num_classes=dataloader.num_classes(), lr=1e-3, optimizer='SGD')
 
     # give training a go
     tb_logger = pl_loggers.TensorBoardLogger('../Logs/', name="TestRun")

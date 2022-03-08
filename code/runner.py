@@ -19,8 +19,9 @@ def run(config, datapath, Dataloader, Model, logpath,
     '''
 
     # log set up
-    logname = "spct{}_opt{}_lr{}_reg{}_drop{}_bn{}_gc{}_mom{}_dec{}".format(
-        *[config[s] for s in ['fftmethod', 'optimizer', 'lr', 'L2', 'dropout', 'batch_norm', 'gradient_clipping', 'momentum', 'lr_decay']])
+    logname = "spct{}_opt{}_lr{}_reg{}_drop{}_bn{}_gc{}_mom{}_dec{}_pooling{}".format(
+        *[config[s] for s in ['fftmethod', 'optimizer', 'lr', 'L2', 'dropout', 'batch_norm', 'gradient_clipping',
+                              'momentum', 'lr_decay', 'pooling']])
     tb_logger = pl_loggers.TensorBoardLogger(logpath, name=logname)
     print("LOGNAME: {}".format(logname))
 
@@ -31,7 +32,8 @@ def run(config, datapath, Dataloader, Model, logpath,
 
     # model initialisation
     model = Model(num_classes=dataloader.num_classes(), lr=config['lr'], batch_norm=config['batch_norm'],
-            dropout = config['dropout'], L2 = config['L2'], momentum=config['momentum'],lr_decay = config['lr_decay'],  optimizer=config['optimizer'])
+            dropout = config['dropout'], L2 = config['L2'], momentum=config['momentum'],lr_decay = config['lr_decay'],
+                  optimizer=config['optimizer'], poolmethod=config['pooling'])
     trainer = pl.Trainer(logger=tb_logger, max_epochs=config['max_epochs'], tpu_cores=tpu_cores, gpus=gpu_cores,
                          log_every_n_steps=10,
                          callbacks=[EarlyStopping(
