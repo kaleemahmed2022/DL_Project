@@ -399,12 +399,13 @@ if __name__ == '__main__':
     #m4apath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/raw'
     #wavpath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/wav'
     #sptpath = '/Users/devyanigauri/Documents/GitHub/DL_Project/dataset/spectrograms'
-    m4apath = os.path.normpath(os.getcwd()+os.sep+os.pardir+os.sep+os.pardir)+'/minidata/raw'
-    sptpath = os.path.normpath(os.getcwd()+os.sep+os.pardir+os.sep+os.pardir)+'/minidata/spectrograms'
+    #m4apath = os.path.normpath(os.getcwd()+os.sep+os.pardir+os.sep+os.pardir)+'/minidata/raw'
+    #sptpath = os.path.normpath(os.getcwd()+os.sep+os.pardir+os.sep+os.pardir)+'/minidata/spectrograms'
+    m4apath = '/Users/jameswilkinson/Downloads/dev/wav2/'
     # m4apath = '../dataset/raw'
     # sptpath = '../dataset/spectrograms'
     # dataset_to_wav(m4apath, wavpath)
     # dataset_to_png(m4apath, sptpath)
-    dataset_to_pt(m4apath, sptpath)
+    # dataset_to_pt(m4apath, sptpath)
     # noise_datasets(m4apath)
     gen_phases(m4apath, train_split=0.7, valid_split=0.15, test_split=0.15)

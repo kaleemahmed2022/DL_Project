@@ -185,7 +185,9 @@ class VoxDatasetFly(VoxDataset):
 
         x, sr = librosa.load(full_path, sr=sr, mono=True, duration=3)
         spec = dct_scipy.sdct(x, frame_step=Ns, frame_length=Nw)
-        spec_abs = np.log(np.abs(spec))
+        #spec_abs = np.log(np.abs(spec))
+        spec_abs = librosa.amplitude_to_db(spec)
+        spec_abs = np.nan_to_num(spec_abs) # catchall to stop errors
         spec_norm = (spec_abs - spec_abs.mean()) / spec_abs.std()
 
         required_size = (513, 301)
@@ -234,7 +236,9 @@ class VoxDatasetFly(VoxDataset):
         x, sr = librosa.load(full_path, sr=sr, mono=True, duration=3)
         spec = librosa.feature.mfcc(x, hop_length=Ns, win_length=Nw, n_mfcc=1024)  # FFT in complex numbers
         #spec_abs = librosa.amplitude_to_db(spec)
-        spec_abs = np.log(np.abs(spec))
+        #spec_abs = np.log(np.abs(spec))
+        spec_abs = librosa.amplitude_to_db(spec)
+        spec_abs = np.nan_to_num(spec_abs) # catchall to stop errors
         spec_norm = (spec_abs - spec_abs.mean()) / spec_abs.std()
 
         required_size = (513, 301)
