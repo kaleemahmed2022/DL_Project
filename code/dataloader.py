@@ -9,7 +9,7 @@ import librosa.display
 import warnings
 from scipy import signal
 import cv2
-import pydct # install from https://github.com/jonashaag/pydct
+from pydct import scipy as dct_scipy # install from https://github.com/jonashaag/pydct
 
 warnings.filterwarnings('ignore') # surpress warnings
 
@@ -164,9 +164,10 @@ class VoxDatasetFly(VoxDataset):
         return label, spec_tens.transpose(dim0=1, dim1=2)
 
 
-    def _pydctSDCT(self, idx):
+    def _pydctSDCT(self, idx, resize_method='padding'):
         '''
         __getitem__ specialisation for using https://github.com/jonashaag/pydct short time cosine transform
+        see docs on ._librosaMFCC for documentation on resize_method
         '''
 
         sample_meta = self.dataset.iloc[idx]
@@ -183,12 +184,28 @@ class VoxDatasetFly(VoxDataset):
         Nw = int(float(Tw) / 1000 * sr)
 
         x, sr = librosa.load(full_path, sr=sr, mono=True, duration=3)
-        spec = pydct.torch.sdct_torch(x, hop_length=Ns, win_length=Nw, n_fft=1024)  # FFT in complex numbers
+        spec = dct_scipy.sdct(x, frame_step=Ns, frame_length=Nw)
         spec_abs = np.log(np.abs(spec))
-
-        #spec_log = np.log(spec_abs)
         spec_norm = (spec_abs - spec_abs.mean()) / spec_abs.std()
-        spec_tens = torch.tensor(spec_norm).unsqueeze(0) # tensorize into the correct dimension
+
+        required_size = (513, 301)
+        if resize_method.lower() == 'interpolation':
+            spec_resize = cv2.resize(spec_norm, dsize=required_size[::-1], interpolation=cv2.INTER_CUBIC)
+        elif resize_method.lower() == 'padding':
+            fpad_size = int((required_size[0] - spec_norm.shape[0]))  # padding needed on freq axis
+            tpad_size = int((required_size[1] - spec_norm.shape[1]))  # padding needed on x axis
+
+            # if fpad_size is odd, we need to increase it to an even number then trim 1 back at the end
+            odd_check = True if fpad_size % 2 != 0 else False
+            if odd_check: fpad_size += 1
+            spec_resize = np.pad(spec_norm, ((int(fpad_size / 2), int(fpad_size / 2)), (0, tpad_size)), mode='constant',
+                                 constant_values=0)
+
+            if odd_check: spec_resize = spec_resize[1:]  # take one back if fpad_size was odd
+        else:
+            raise AttributeError("Invalid resizeing method supplied: {}".format(resize_method))
+
+        spec_tens = torch.tensor(spec_resize).unsqueeze(0) # tensorize into the correct dimension
         return label, spec_tens.transpose(dim0=1, dim1=2)
 
 
@@ -241,9 +258,10 @@ class VoxDatasetFly(VoxDataset):
         return label, spec_tens.transpose(dim0=1, dim1=2)
 
 
-    def _librosaMEL(self, idx):
+    def _librosaMEL(self, idx, resize_method='padding'):
         '''
         __getitem__ specialisation for using librosa's melspectrogram
+        see docs on self._librosaMFCC for resize_method functionality
         '''
 
         sample_meta = self.dataset.iloc[idx]
@@ -262,10 +280,25 @@ class VoxDatasetFly(VoxDataset):
         x, sr = librosa.load(full_path, sr=sr, mono=True, duration=3)
         spec = librosa.feature.melspectrogram(x, hop_length=Ns, win_length=Nw, n_fft=1024)  # FFT in complex numbers
         spec_abs = np.log(np.abs(spec))
-        #spec_abs = librosa.amplitude_to_db(spec)
-        #spec_abs = spec # ???
         spec_norm = (spec_abs - spec_abs.mean()) / spec_abs.std()
-        spec_resize = cv2.resize(spec_norm, dsize=(301, 513), interpolation=cv2.INTER_CUBIC)
+
+        required_size = (513, 301)
+        if resize_method.lower() == 'interpolation':
+            spec_resize = cv2.resize(spec_norm, dsize=required_size[::-1], interpolation=cv2.INTER_CUBIC)
+        elif resize_method.lower() == 'padding':
+            fpad_size = int((required_size[0] - spec_norm.shape[0]))  # padding needed on freq axis
+            tpad_size = int((required_size[1] - spec_norm.shape[1])) # padding needed on x axis
+
+            # if fpad_size is odd, we need to increase it to an even number then trim 1 back at the end
+            odd_check = True if fpad_size % 2 != 0 else False
+            if odd_check: fpad_size += 1
+            spec_resize = np.pad(spec_norm, ((int(fpad_size / 2), int(fpad_size / 2)), (0, tpad_size)), mode='constant',
+                   constant_values=0)
+
+            if odd_check: spec_resize = spec_resize[1:] # take one back if fpad_size was odd
+        else:
+            raise AttributeError("Invalid resizeing method supplied: {}".format(resize_method))
+
 
         spec_tens = torch.tensor(spec_resize).unsqueeze(0)  # tensorize into the correct dimension
         return label, spec_tens.transpose(dim0=1, dim1=2)
