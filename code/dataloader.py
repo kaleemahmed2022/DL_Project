@@ -9,7 +9,7 @@ import librosa.display
 import warnings
 from scipy import signal
 import cv2
-from pydct import scipy as dct_scipy # install from https://github.com/jonashaag/pydct
+import j_pydct as dct_scipy
 
 warnings.filterwarnings('ignore') # surpress warnings
 
