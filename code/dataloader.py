@@ -160,6 +160,7 @@ class VoxDatasetFly(VoxDataset):
         spec_abs = np.log(np.abs(spec))
 
         spec_norm = (spec_abs - spec_abs.mean()) / spec_abs.std()
+        spec_norm[spec_norm!=spec_norm] = 0 # catchall to stop errors
         spec_tens = torch.tensor(spec_norm).unsqueeze(0) # tensorize into the correct dimension
         return label, spec_tens.transpose(dim0=1, dim1=2)
 
@@ -284,6 +285,7 @@ class VoxDatasetFly(VoxDataset):
         x, sr = librosa.load(full_path, sr=sr, mono=True, duration=3)
         spec = librosa.feature.melspectrogram(x, hop_length=Ns, win_length=Nw, n_fft=1024)  # FFT in complex numbers
         spec_abs = np.log(np.abs(spec))
+        spec_abs = np.nan_to_num(spec_abs) # catchall to stop errors
         spec_norm = (spec_abs - spec_abs.mean()) / spec_abs.std()
 
         required_size = (513, 301)
